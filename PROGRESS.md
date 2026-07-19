@@ -6,7 +6,46 @@ read CONCEPT.md (approved, includes Act III chronology fix + all-input-mode endi
 `.claude/agents/verifier.md` — invoke after each stage, max 3 fix cycles, commit
 `stage N: <summary> [verified]` on PASS. Never delete anything under `verify/`.
 
-## Status: COMPLETE + FINAL REVISION PASS — all 8 stages + 6 revision items verified (2026-07-19)
+## Status: COMPLETE — 8 stages + final revision pass + Gargantua redesign (2026-07-19)
+
+### Black hole redesign (Gargantua) + resilience layer ✅ PASS (3 cycles)
+Screenshots: verify/blackhole/. What shipped:
+- **T2**: js/lensing.js rewritten as a bent-ray Gargantua renderer — per-pixel rays
+  deflect around the mass (single-deflection approximation) and sample a procedural
+  disc, so the far side folds into arcs above/below the shadow; photon ring at the
+  critical impact parameter; doppler beaming (approach side bright/white); background
+  starfield warps through the same deflection. Composition: tilted, anchored right,
+  band bleeding off-frame. Verifier scorecard: all 7 resemblance criteria PASS.
+- **Interaction**: pointer never moves the hole/disc. Camera parallax orbit only
+  (spring-smoothed, idles back to rest after 2.5s — scene.js _parallaxEase); lensing
+  recomputed from the real camera each frame, so arcs/ring shift with viewpoint
+  (verified: arc radii shift 16-28px vs ≤10px noise; hole moves only 0.69% frame).
+  Old ring-lean/infall-smear pointer effects removed with the old meshes.
+- **T1/T0 + fallback**: pre-composed painted sprite (js/gargantua-sprite.js) — same
+  composition, static; shown whenever the lens isn't active. Still Mode paints the
+  same composition into its long-night frame. Long-night text now left-aligned
+  (content.js align field); desktop scrim added for this epoch.
+- **Resilience layer (NEW this pass — it did not previously exist in this repo,
+  despite earlier plans)**: boot().catch → emergencyStill (reuses UI/timeline if
+  already built); 15s preloader watchdog; rAF-stall watchdog (4s) + webglcontextlost
+  → bailToStill; cursor watchdog in ui.js (native cursor restored if the dot loop
+  stalls >2.5s); LensPass feature-detected at init and guarded per-frame.
+- Cycle 1 FAIL: sprite read as flat Saturn-ring; boundary pops at 0.79/0.90; desktop
+  caption wash. Cycle 2 FAIL: pops persisted with magenta floor — TRUE root cause
+  found by pixel probes: the lens RT stored the scene LINEAR in 8 bits, crushing the
+  dark floor to (1,0,1) bytes; fixed with HalfFloatType RT + exact sRGB OETF on the
+  background (boundary now byte-identical rgb(8,7,15) both sides); sprite arcs were
+  inverted (canvas y-down sign). Cycle 3 PASS: smooth luma series both boundaries,
+  no tint, over-arc 1.67x under-arc, 60fps T2+L.
+- Software-WebGL (SwiftShader) run: full chain verified — T2+L → T1 (6.5s) → T0
+  (12.7s) → Still Mode bailout (25.4s); post-bail scroll steps still frames and the
+  native cursor is restored. KNOWN LIMITATION: the Claude Code in-app browser
+  hard-freezes the entire tab; when a tab halts completely, JS timers freeze with
+  the rAF loop, so no in-page watchdog can fire. The watchdogs cover every case
+  where the page itself still gets CPU (stalled rAF, lost context, slow boot,
+  crashed boot). The full-tab freeze is beyond in-page recovery — accepted.
+
+## Previous status: 8 stages + final revision pass (detail below)
 
 ### Final revision pass ✅ (2 verifier cycles for groups A+B, 1 for item 5 + full regression)
 Screenshots: verify/final-pass/. Items:

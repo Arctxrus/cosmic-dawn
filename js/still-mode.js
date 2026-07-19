@@ -3,6 +3,7 @@
 // once-painted 2D-canvas starfield — same copy, same index, same readout.
 
 import { EPOCHS, epochAt, EXTINCTION_T } from './content.js';
+import { paintGargantua } from './gargantua-sprite.js';
 
 export function stillModeRequested() {
   const params = new URLSearchParams(location.search);
@@ -58,6 +59,11 @@ export class StillMode {
       f.appendChild(c);
       host.appendChild(f);
       paintStars(c, epoch.still.star, epoch.still.density);
+      // the long night's still frame is the lensed composition itself
+      if (epoch.id === 'long-night') {
+        const ctx = c.getContext('2d');
+        paintGargantua(ctx, c.width * 0.66, c.height * 0.42, c.height * 0.14, -0.18);
+      }
       this.frames.set(epoch.id, f);
     }
     this._active = null;

@@ -116,6 +116,7 @@ export const EPOCHS = [
   {
     id: 'long-night',
     label: 'THE LONG NIGHT',
+    align: 'left', // Gargantua owns the right of the frame
     range: [0.79, 0.90],
     time: 'T + 10¹² YEARS',
     headline: 'Almost nothing',

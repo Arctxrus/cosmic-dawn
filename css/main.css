@@ -229,6 +229,23 @@ body {
   100% { transform: scaleY(1) translateY(8px); opacity: 0; }
 }
 
+/* Gargantua owns the right of the frame and its disc band crosses the text
+   column — this epoch gets the soft scrim on desktop too */
+#epoch-long-night::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+  background: radial-gradient(
+    ellipse 60% 46% at 24% 50%,
+    rgba(8, 7, 15, 0.32) 0%,
+    rgba(8, 7, 15, 0.2) 45%,
+    transparent 72%
+  );
+}
+#epoch-long-night.visible::before { opacity: 1; }
+
 /* focus — id-level selectors so all:unset resets can't swallow the ring */
 :focus-visible,
 #epoch-index button:focus-visible,

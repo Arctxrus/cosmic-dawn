@@ -44,7 +44,8 @@ export class UI {
     EPOCHS.forEach((epoch, i) => {
       if (!epoch.headline) return;
       const sec = document.createElement('section');
-      sec.className = 'epoch-text' + (i % 2 === 0 ? ' align-right' : '');
+      const right = epoch.align ? epoch.align === 'right' : i % 2 === 0;
+      sec.className = 'epoch-text' + (right ? ' align-right' : '');
       sec.id = `epoch-${epoch.id}`;
       const h2 = document.createElement('h2');
       h2.textContent = epoch.headline;
@@ -108,14 +109,25 @@ export class UI {
       }
     }, { passive: true });
 
+    let lastFollowTick = performance.now();
     const follow = () => {
+      lastFollowTick = performance.now();
       x += (tx - x) * 0.22;
       y += (ty - y) * 0.22;
       dot.style.left = x + 'px';
       dot.style.top = y + 'px';
       requestAnimationFrame(follow);
     };
-    if (fine) requestAnimationFrame(follow);
+    if (fine) {
+      requestAnimationFrame(follow);
+      // cursor watchdog: hiding the native cursor is only legitimate while
+      // the dot is actually being driven — if the loop stalls, give it back
+      setInterval(() => {
+        if (performance.now() - lastFollowTick > 2500) {
+          document.body.classList.remove('has-pointer');
+        }
+      }, 1500);
+    }
   }
 
   _whisper() {

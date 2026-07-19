@@ -43,7 +43,7 @@ export class SceneRig {
       { t: 0.715, pos: [46, 9, 5], look: [21, 3, -35] },   // retreating as the Sun swells right of frame
       { t: 0.75, pos: [33, 6, -18], look: [26, 3, -35] },  // drawn back in for the collapse
       { t: 0.79, pos: [14, 10, 42], look: [2, 2, -38] },   // the long pull-back into an empty sky
-      { t: 0.845, pos: [4, 4, -8], look: [5, 2, -40] },    // face to face with the hole, seated left
+      { t: 0.845, pos: [-16, 4.5, 6], look: [-6.3, 2.6, -30] }, // Gargantua: vast, right of frame, bleeding off the edge
       { t: 0.9, pos: [-4, 2, 8], look: [0, 0, -15] },      // turning to the last ember
       { t: 0.96, pos: [0, 0, -4], look: [0, 0, -15] },     // close enough to warm your hands
       { t: 1.0, pos: [0, 0, -4.5], look: [0, 0, -15] },    // stillness, and the dark
@@ -59,6 +59,8 @@ export class SceneRig {
     this.pointerStrength = 0;
     this._tapBoost = 0;
     this._fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+    this._lastPointerMoveAt = 0;
+    this._parallaxEase = 0;
     window.addEventListener('pointermove', (e) => {
       if (e.pointerType && e.pointerType !== 'mouse') return;
       this._pointerTarget.set(
@@ -66,6 +68,7 @@ export class SceneRig {
         -(e.clientY / window.innerHeight) * 2 + 1
       );
       this.pointerActive = true;
+      this._lastPointerMoveAt = performance.now();
     });
     // tap pulse: short touch without scroll movement
     let touchStart = null;
@@ -270,8 +273,12 @@ export class SceneRig {
     const cam = { pos: [0, 0, 0], look: [0, 0, 0] };
     this._camAt(t, cam);
     // parallax layer: ±2.5 units, applied on top of the path
-    const px = this.pointer.x * 2.5;
-    const py = this.pointer.y * 1.6;
+    // parallax orbit: a few degrees around the view, spring-smoothed, and
+    // gently returning to rest when the pointer goes quiet
+    const idle = performance.now() - this._lastPointerMoveAt > 2500;
+    this._parallaxEase += ((idle ? 0 : 1) - this._parallaxEase) * Math.min(1, dt * 1.4);
+    const px = this.pointer.x * 2.5 * this._parallaxEase;
+    const py = this.pointer.y * 1.6 * this._parallaxEase;
     this.camera.position.set(cam.pos[0] + px, cam.pos[1] + py, cam.pos[2]);
     this.camera.lookAt(cam.look[0] + px * 0.35, cam.look[1] + py * 0.35, cam.look[2]);
     // portrait framing: pitch the view down a touch so hero objects ride

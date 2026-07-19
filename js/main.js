@@ -46,15 +46,51 @@ async function dismissPreloader() {
   if (elapsed < 900) await new Promise((r) => setTimeout(r, 900 - elapsed));
   setProgress(1);
   preloader.classList.add('done');
+  clearTimeout(preloaderWatchdog);
   setTimeout(() => preloader.remove(), 1300);
 }
+
+// ---------------------------------------------------------------------------
+// Resilience: the story must reach the visitor even when the engine can't.
+// Boot wrapper + preloader watchdog land in Still Mode; nothing ever throws
+// its way to a blank page.
+
+let emergencyDone = false;
+let builtTimeline = null, builtUI = null; // set by boot(); reused on emergency
+function emergencyStill(why) {
+  if (emergencyDone) return;
+  emergencyDone = true;
+  try {
+    const timeline = builtTimeline || new Timeline();
+    const ui = builtUI || new UI(timeline);
+    timeline.jumpTo = (t) => window.scrollTo(0, t * (document.documentElement.scrollHeight - innerHeight));
+    const still = new StillMode(ui, timeline);
+    const step = () => still.update(timeline.rawT);
+    window.addEventListener('scroll', step, { passive: true });
+    step();
+    if (DEBUG) initDebug(() => ({ fps: '—', tier: `still (${why})`, t: timeline.rawT }));
+  } catch (err) {
+    // last resort: at least never trap the visitor behind the preloader
+    console.warn('emergency still failed:', err);
+  }
+  const pre = document.getElementById('preloader');
+  if (pre) {
+    pre.classList.add('done');
+    setTimeout(() => pre.remove(), 1300);
+  }
+}
+
+// if boot never dismisses the preloader, force the still experience
+const preloaderWatchdog = setTimeout(() => {
+  if (document.getElementById('preloader')) emergencyStill('preloader-watchdog');
+}, 15000);
 
 // ---------------------------------------------------------------------------
 
 async function boot() {
   setProgress(0.1, 'CALIBRATING 13,800,000,000 YEARS');
-  const timeline = new Timeline();
-  const ui = new UI(timeline);
+  const timeline = builtTimeline = new Timeline();
+  const ui = builtUI = new UI(timeline);
   const stillWhy = stillModeRequested();
 
   // sound: off by default, synthesized on demand, works in every mode
@@ -106,14 +142,24 @@ async function boot() {
   const rig = new SceneRig(document.getElementById('scene'), tier);
   rig.lensActive = false;
 
-  // real gravitational lensing — T2 only; first thing the governor drops
+  // real gravitational lensing — T2 only; first thing the governor drops.
+  // Feature-detected: if anything the pass needs is missing, we fall to the
+  // sprite tier below rather than throw.
   const [{ LensPass }, { localT, envelope }, longnightMeta] = await Promise.all([
     import('./lensing.js'),
     import('./epochs/util.js'),
     import('./epochs/08-longnight.js'),
   ]);
   let lensEnabled = tier === 2;
-  const lens = lensEnabled ? new LensPass(rig.renderer) : null;
+  let lens = null;
+  if (lensEnabled) {
+    try {
+      lens = new LensPass(rig.renderer);
+    } catch (err) {
+      console.warn('lens pass unavailable, falling back to sprite:', err);
+      lensEnabled = false;
+    }
+  }
   const sizeLens = () => {
     if (lens) lens.setSize(innerWidth, innerHeight, rig.renderer.getPixelRatio());
   };
@@ -145,7 +191,8 @@ async function boot() {
 
   let bailed = false;
   function bailToStill() {
-    // even T0 can't hold a frame rate — restage the piece rather than stutter
+    // the scene can't hold together — restage the piece rather than stutter
+    if (bailed) return;
     bailed = true;
     const still = new StillMode(ui, timeline);
     timeline.jumpTo = (tt) => window.scrollTo(0, tt * (document.documentElement.scrollHeight - innerHeight));
@@ -158,8 +205,21 @@ async function boot() {
     step();
   }
 
+  // rAF-stall watchdog: if the frame loop stops ticking (driver hang, lost
+  // context) while timers still run, restage to Still Mode. If the whole tab
+  // is frozen, timers are frozen too — that case is beyond any in-page watchdog.
+  let lastFrameAt = performance.now();
+  setInterval(() => {
+    if (!bailed && performance.now() - lastFrameAt > 4000) bailToStill();
+  }, 2000);
+  rig.renderer.domElement.addEventListener('webglcontextlost', (e) => {
+    e.preventDefault();
+    bailToStill();
+  });
+
   function frame(now) {
     if (bailed) return;
+    lastFrameAt = now;
     const rawDt = (now - last) / 1000; // unclamped: the honest frame time
     const dt = Math.min(0.05, rawDt);
     last = now;
@@ -172,7 +232,14 @@ async function boot() {
     epochs.update(timeline.t, dt, time);
     rig.update(timeline.t, dt, time);
     if (rig.lensActive) {
-      lens.render(rig, longnightMeta.HOLE_POS, longnightMeta.HOLE_RADIUS, lensEnv, time);
+      try {
+        lens.render(rig, longnightMeta.HOLE_POS, longnightMeta.HOLE_RADIUS, lensEnv, time);
+      } catch (err) {
+        console.warn('lens pass failed at runtime, dropping it:', err);
+        lensEnabled = false;
+        rig.lensActive = false;
+        rig.render();
+      }
     } else {
       rig.render();
     }
@@ -220,4 +287,7 @@ function initDebug(read) {
   }, 250);
 }
 
-boot();
+boot().catch((err) => {
+  console.warn('boot failed, restaging as still:', err);
+  emergencyStill('boot-error');
+});
