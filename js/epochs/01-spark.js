@@ -112,7 +112,7 @@ export function createSpark() {
       uniforms.uPixelRatio.value = rig.renderer.getPixelRatio();
       // pointer in world space near the burst plane
       uniforms.uPointer.value.set(rig.pointer.x * 45, rig.pointer.y * 28, 0);
-      uniforms.uPointerStrength.value = rig.pointerActive ? 1 : 0;
+      uniforms.uPointerStrength.value = rig.pointerStrength;
       // core: blinding at detonation, cooling and shrinking as the blast expands
       const flash = Math.pow(Math.max(0, 1 - l * 1.35), 1.6);
       core.material.opacity = envelope(l, 0.02, 0.3) * (0.25 + 0.75 * flash);

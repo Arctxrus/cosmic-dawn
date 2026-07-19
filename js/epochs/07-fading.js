@@ -40,7 +40,7 @@ export function createFading() {
       u.uAgitation.value = Math.min(1, Math.abs(rig.scrollVelocity || 0) * 8);
       u.uPixelRatio.value = rig.renderer.getPixelRatio();
       u.uPointer.value.set(SUN_POS.x + rig.pointer.x * 14, SUN_POS.y + rig.pointer.y * 9, SUN_POS.z);
-      u.uPointerStrength.value = rig.pointerActive ? 0.5 : 0;
+      u.uPointerStrength.value = rig.pointerStrength * 0.5;
 
       const swell = THREE.MathUtils.smoothstep(l, 0, SWELL_END);
       const collapse = THREE.MathUtils.smoothstep(l, SWELL_END, COLLAPSE_END);

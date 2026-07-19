@@ -54,13 +54,39 @@ export class SceneRig {
     this.applyTier(tier);
     this.resize();
 
+    // pointerStrength: 1 while a fine pointer is present; on touch it spikes
+    // with each tap and decays, so taps fire every epoch's signature effect.
+    this.pointerStrength = 0;
+    this._tapBoost = 0;
+    this._fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
     window.addEventListener('pointermove', (e) => {
+      if (e.pointerType && e.pointerType !== 'mouse') return;
       this._pointerTarget.set(
         (e.clientX / window.innerWidth) * 2 - 1,
         -(e.clientY / window.innerHeight) * 2 + 1
       );
       this.pointerActive = true;
     });
+    // tap pulse: short touch without scroll movement
+    let touchStart = null;
+    window.addEventListener('touchstart', (e) => {
+      const t = e.touches[0];
+      if (t) touchStart = { x: t.clientX, y: t.clientY, at: performance.now() };
+    }, { passive: true });
+    window.addEventListener('touchend', (e) => {
+      const t = e.changedTouches[0];
+      if (!t || !touchStart) return;
+      const moved = Math.hypot(t.clientX - touchStart.x, t.clientY - touchStart.y);
+      if (moved < 12 && performance.now() - touchStart.at < 400) {
+        this._pointerTarget.set(
+          (t.clientX / window.innerWidth) * 2 - 1,
+          -(t.clientY / window.innerHeight) * 2 + 1
+        );
+        this.pointer.copy(this._pointerTarget); // pulses land where you touch, instantly
+        this._tapBoost = 1.6;
+      }
+      touchStart = null;
+    }, { passive: true });
     window.addEventListener('resize', () => this.resize());
   }
 
@@ -87,6 +113,9 @@ export class SceneRig {
       uT: { value: 0 },        // timeline 0..1
       uDensity: { value: 0.5 }, // fraction of stars visible
       uTempMix: { value: 0.5 }, // 0 = cool blue, 1 = ember red
+      uPointerNdc: { value: new THREE.Vector2(0, 0) },
+      uPointerStrength: { value: 0 },
+      uRekindle: { value: 0 }, // THE FADING: stars near the cursor burn up briefly
       uPixelRatio: { value: this.renderer.getPixelRatio() },
     };
 
@@ -97,21 +126,27 @@ export class SceneRig {
       blending: THREE.AdditiveBlending,
       vertexShader: /* glsl */ `
         attribute float aSeed;
-        uniform float uTime, uDensity, uPixelRatio;
-        varying float vSeed, vTwinkle;
+        uniform float uTime, uDensity, uPixelRatio, uPointerStrength, uRekindle;
+        uniform vec2 uPointerNdc;
+        varying float vSeed, vTwinkle, vNear;
         void main() {
           vSeed = aSeed;
           vec4 mv = modelViewMatrix * vec4(position, 1.0);
           float visible = step(aSeed, uDensity);
           vTwinkle = 0.75 + 0.25 * sin(uTime * (0.4 + aSeed * 1.6) + aSeed * 40.0);
           float size = (1.0 + pow(fract(aSeed * 7.31), 3.0) * 2.6) * uPixelRatio;
-          gl_PointSize = size * visible * (300.0 / -mv.z);
-          gl_Position = projectionMatrix * mv;
+          // your presence, measured in screen space: nearby stars notice
+          vec4 clip = projectionMatrix * mv;
+          vec2 ndc = clip.xy / max(0.0001, clip.w);
+          float near = exp(-dot(ndc - uPointerNdc, ndc - uPointerNdc) * 14.0) * uPointerStrength;
+          vNear = near;
+          gl_PointSize = size * visible * (300.0 / -mv.z) * (1.0 + near * (0.35 + uRekindle * 2.2));
+          gl_Position = clip;
         }
       `,
       fragmentShader: /* glsl */ `
-        uniform float uTempMix;
-        varying float vSeed, vTwinkle;
+        uniform float uTempMix, uRekindle;
+        varying float vSeed, vTwinkle, vNear;
         void main() {
           vec2 c = gl_PointCoord - 0.5;
           float d = length(c);
@@ -123,7 +158,11 @@ export class SceneRig {
           vec3 red  = vec3(0.55, 0.18, 0.12);
           float t = clamp(uTempMix + (fract(vSeed * 13.7) - 0.5) * 0.4, 0.0, 1.0);
           vec3 col = t < 0.5 ? mix(cool, warm, t * 2.0) : mix(warm, red, (t - 0.5) * 2.0);
-          gl_FragColor = vec4(col, glow * vTwinkle);
+          // illumination near the cursor; in THE FADING it becomes rekindling —
+          // a dying star flaring gold under your hand, unable to keep it
+          col = mix(col, vec3(1.0, 0.83, 0.55), min(1.0, vNear * (0.4 + uRekindle)));
+          float a = glow * vTwinkle * (1.0 + vNear * (0.3 + uRekindle * 2.6));
+          gl_FragColor = vec4(col, min(1.0, a));
         }
       `,
     });
@@ -151,6 +190,12 @@ export class SceneRig {
     u.uDensity.value = density;
     // temperature: blue-violet young → warm middle → ember end
     u.uTempMix.value = t < 0.53 ? 0.15 + t * 0.5 : 0.41 + ((t - 0.53) / 0.47) * 0.59;
+    // pointer illumination everywhere; full rekindle voltage only in THE FADING
+    u.uPointerNdc.value.copy(this.pointer);
+    u.uPointerStrength.value = this.pointerStrength;
+    const inFading = t > 0.68 && t < 0.79;
+    const fadeEdge = inFading ? Math.min((t - 0.68) / 0.02, (0.79 - t) / 0.02, 1) : 0;
+    u.uRekindle.value = Math.max(0, fadeEdge);
   }
 
   _camAt(t, out) {
@@ -169,6 +214,10 @@ export class SceneRig {
   update(t, dt, time) {
     // smoothed pointer for parallax
     this.pointer.lerp(this._pointerTarget, Math.min(1, dt * 3.5));
+    // strength: steady presence for a fine pointer, decaying pulses for taps
+    this._tapBoost = Math.max(0, this._tapBoost - dt * 1.3);
+    const steady = this._fine && this.pointerActive ? 1 : 0;
+    this.pointerStrength = Math.min(1.6, steady + this._tapBoost);
     const cam = { pos: [0, 0, 0], look: [0, 0, 0] };
     this._camAt(t, cam);
     // parallax layer: ±2.5 units, applied on top of the path

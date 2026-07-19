@@ -123,7 +123,7 @@ export function createLastStar() {
       uniforms.uDying.value = dying;
       uniforms.uFlicker.value = Math.max(0.2, gutter);
       uniforms.uPointer.value.set(rig.pointer.x * 8, rig.pointer.y * 5, 0);
-      uniforms.uPointerStrength.value = rig.pointerActive ? 1 : 0;
+      uniforms.uPointerStrength.value = rig.pointerStrength;
       uniforms.uPixelRatio.value = rig.renderer.getPixelRatio();
       core.material.opacity = out ? 0 : env * (0.4 - dying * 0.28) * gutter;
       core.scale.setScalar(5 - dying * 2.5);

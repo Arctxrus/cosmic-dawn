@@ -112,7 +112,7 @@ export function createDarkAges() {
       uniforms.uTime.value = time;
       uniforms.uAgitation.value = Math.min(1, Math.abs(rig.scrollVelocity || 0) * 8);
       uniforms.uPointer.value.set(rig.pointer.x * 60, rig.pointer.y * 38, 0);
-      uniforms.uPointerStrength.value = rig.pointerActive ? 1 : 0;
+      uniforms.uPointerStrength.value = rig.pointerStrength;
       uniforms.uPixelRatio.value = rig.renderer.getPixelRatio();
     },
 

@@ -132,6 +132,14 @@ export class UI {
     this.endingLight.style.top = py + 'px';
   }
 
+  // the cursor is the visitor's light: it cools and warms with the universe
+  static CURSOR_TINTS = [
+    ['prologue', '#E4B85C'], ['spark', '#C9C4FF'], ['afterglow', '#E8A05C'],
+    ['dark-ages', '#8890B8'], ['first-light', '#F0A860'], ['web', '#BFD3F2'],
+    ['home', '#FFD98C'], ['fading', '#D87850'], ['long-night', '#A04030'],
+    ['last-star', '#E4B85C'],
+  ];
+
   /** Called every frame with smoothed t. */
   update(t) {
     // title lockup: fades out across the prologue
@@ -156,6 +164,8 @@ export class UI {
       const cur = this.indexButtons.get(epoch.id);
       if (cur) cur.setAttribute('aria-current', 'true');
       this.activeEpoch = epoch;
+      const tint = UI.CURSOR_TINTS.find(([id]) => id === epoch.id);
+      if (tint) document.getElementById('cursor').style.background = tint[1];
     }
 
     // epoch text visibility + staged caption reveals within the epoch
@@ -179,6 +189,7 @@ export class UI {
     // ending: after extinction, credits + the last light for non-pointer users
     const ended = t >= EXTINCTION_T + 0.015;
     this.creditsEl.classList.toggle('visible', ended);
+    document.body.classList.toggle('after-extinction', ended);
     // whose light survives: the cursor dot if a pointer has been seen,
     // otherwise the ending ember (touch: at the finger; keyboard: by the line)
     const pointerSeen = document.body.classList.contains('has-pointer');

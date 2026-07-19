@@ -217,7 +217,7 @@ export function createHome() {
       su.uPixelRatio.value = rig.renderer.getPixelRatio();
       // the Sun flares gently toward the cursor
       su.uPointer.value.set(SUN_POS.x + rig.pointer.x * 10, SUN_POS.y + rig.pointer.y * 7, SUN_POS.z);
-      su.uPointerStrength.value = rig.pointerActive ? 0.6 : 0;
+      su.uPointerStrength.value = rig.pointerStrength * 0.6;
       sun.core.material.opacity = env * dive * 0.5;
       sun.core.scale.setScalar(8);
 
@@ -240,10 +240,11 @@ export function createHome() {
       planetPts.material.uniforms.uEnv.value = env * dive;
       planetPts.material.uniforms.uPixelRatio.value = rig.renderer.getPixelRatio();
 
-      // orbits fade in on arrival; brighten near the pointer
+      // orbits fade in on arrival; the system lights its paths for your presence
       const arrive = THREE.MathUtils.smoothstep(l, 0.5, 0.75);
-      orbitLines.children.forEach((line, i) => {
-        line.material.opacity = env * arrive * 0.1;
+      const noticed = 1 + rig.pointerStrength * 0.9;
+      orbitLines.children.forEach((line) => {
+        line.material.opacity = env * arrive * 0.1 * noticed;
       });
 
       // the pale blue dot beat: ring of attention during the NOW hold

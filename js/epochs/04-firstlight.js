@@ -150,7 +150,7 @@ export function createFirstLight() {
 
       // pointer in world space near the star
       u.uPointer.value.set(rig.pointer.x * 40, rig.pointer.y * 26, -10);
-      u.uPointerStrength.value = rig.pointerActive ? 1 : 0;
+      u.uPointerStrength.value = rig.pointerStrength;
     },
 
     dispose(rig) {

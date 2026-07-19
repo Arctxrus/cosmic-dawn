@@ -6,7 +6,21 @@ read CONCEPT.md (approved, includes Act III chronology fix + all-input-mode endi
 `.claude/agents/verifier.md` — invoke after each stage, max 3 fix cycles, commit
 `stage N: <summary> [verified]` on PASS. Never delete anything under `verify/`.
 
-## Current stage: 6 (pointer interaction pass) — building
+## Current stage: 7 (audio + governor + mobile polish) — building
+
+### Stage 6 — pointer interaction pass ✅ PASS (1 cycle)
+Built: unified rig.pointerStrength (fine pointer steady; touch tap = decaying 1.6
+pulse landing at the touch point — fires every epoch signature). Skybox pointer
+illumination everywhere + rekindle voltage in THE FADING (warm-gold flares near
+cursor). All 9 epoch modules converted to pointerStrength. HOME orbit lines brighten
+with presence. Cursor dot tints per epoch (violet→amber→red→gold) and grows to 13px
+ember after extinction (body.after-extinction).
+- Cycle 1 PASS with pixel-level measurements for all 9 signatures + parallax + touch
+  pulse + FPS-under-motion (60fps). Post-verify: rekindle strengthened (2.2/2.6
+  multipliers, was measured 2.1x noise but visually subtle — verifier observation).
+- Polish notes for stage 8: (a) index labels wash out over accretion disk in one
+  extreme pointer pose at t≈0.845; (b) re-check rekindle visibility after boost.
+- Screenshots: verify/stage-6/.
 
 ### Stage 5 — The Fading + The Long Night + The Last Star ✅ PASS (2 cycles)
 Built: 07-fading.js (red giant swell → white-dwarf collapse with "exhale" bloom,

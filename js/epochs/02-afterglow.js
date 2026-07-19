@@ -143,7 +143,7 @@ export function createAfterglow() {
         u.uEnv.value = env;
         u.uTime.value = time;
         u.uPointer.value.set(rig.pointer.x, rig.pointer.y);
-        u.uPointerStrength.value = rig.pointerActive ? 1 : 0;
+        u.uPointerStrength.value = rig.pointerStrength;
       }
       sparkUniforms.uProgress.value = l;
       sparkUniforms.uEnv.value = env;

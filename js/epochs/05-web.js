@@ -214,7 +214,7 @@ export function createWeb() {
       uniforms.uTime.value = time;
       uniforms.uProgress.value = l;
       uniforms.uPointer.value.set(rig.pointer.x * 130, rig.pointer.y * 80, 0);
-      uniforms.uPointerStrength.value = rig.pointerActive ? 1 : 0;
+      uniforms.uPointerStrength.value = rig.pointerStrength;
       novaUniforms.uEnv.value = env;
       novaUniforms.uProgress.value = l;
       novaUniforms.uTime.value = time;

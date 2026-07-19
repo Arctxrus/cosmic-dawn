@@ -169,11 +169,11 @@ export function createLongNight() {
       ringMat.uniforms.uEnv.value = env;
       ringMat.uniforms.uTime.value = time;
       ringMat.uniforms.uPointer.value.set(rig.pointer.x, rig.pointer.y);
-      ringMat.uniforms.uPointerStrength.value = rig.pointerActive ? 1 : 0;
+      ringMat.uniforms.uPointerStrength.value = rig.pointerStrength;
       infallUniforms.uEnv.value = env;
       infallUniforms.uTime.value = time;
       infallUniforms.uPointer.value.set(rig.pointer.x * 30, rig.pointer.y * 20, 0);
-      infallUniforms.uPointerStrength.value = rig.pointerActive ? 1 : 0;
+      infallUniforms.uPointerStrength.value = rig.pointerStrength;
       infallUniforms.uPixelRatio.value = rig.renderer.getPixelRatio();
 
       // dwarfs gutter out one by one across the epoch

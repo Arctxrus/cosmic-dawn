@@ -241,6 +241,13 @@ body {
 }
 body.has-pointer #cursor { opacity: 1; }
 body.has-pointer.keyboard-nav #cursor { opacity: 0; }
+/* after the last star dies, the light you carried is the only one left */
+body.after-extinction #cursor {
+  width: 13px; height: 13px;
+  background: var(--ember) !important;
+  box-shadow: 0 0 26px 7px rgba(228, 184, 92, 0.65);
+  transition: opacity 0.4s ease, box-shadow 2.5s ease, width 2.5s ease, height 2.5s ease;
+}
 @media (hover: hover) and (pointer: fine) {
   body.has-pointer { cursor: none; }
   body.has-pointer a, body.has-pointer button { cursor: none; }
