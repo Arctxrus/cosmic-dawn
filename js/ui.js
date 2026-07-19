@@ -179,11 +179,15 @@ export class UI {
     // ending: after extinction, credits + the last light for non-pointer users
     const ended = t >= EXTINCTION_T + 0.015;
     this.creditsEl.classList.toggle('visible', ended);
-    const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+    // whose light survives: the cursor dot if a pointer has been seen,
+    // otherwise the ending ember (touch: at the finger; keyboard: by the line)
+    const pointerSeen = document.body.classList.contains('has-pointer');
     if (ended && !this._endingActive) {
       this._endingActive = true;
-      if (!fine) {
-        const [px, py] = this.lastTouch || [innerWidth / 2, innerHeight / 2];
+      if (!pointerSeen) {
+        // fallback seat: beside the closing line on desktop, above it on mobile
+        const fallbackY = innerWidth <= 768 ? innerHeight * 0.3 : innerHeight * 0.46;
+        const [px, py] = this.lastTouch || [innerWidth * 0.5, fallbackY];
         this._moveEndingLight(px, py);
         this.endingLight.hidden = false;
       }

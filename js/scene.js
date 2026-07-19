@@ -40,7 +40,13 @@ export class SceneRig {
       { t: 0.615, pos: [16, 12, -2], look: [26, 3, -35] }, // skimming the arm toward the Sun
       { t: 0.65, pos: [34, 10, -13], look: [29, 2, -33] }, // arrival: sun seated left of frame
       { t: 0.68, pos: [33, 9.5, -14.5], look: [29, 2, -33] },// NOW hold, barely breathing
-      { t: 1.0, pos: [0, 0, 30], look: [0, 0, 0] },
+      { t: 0.715, pos: [46, 9, 5], look: [21, 3, -35] },   // retreating as the Sun swells right of frame
+      { t: 0.75, pos: [33, 6, -18], look: [26, 3, -35] },  // drawn back in for the collapse
+      { t: 0.79, pos: [14, 10, 42], look: [2, 2, -38] },   // the long pull-back into an empty sky
+      { t: 0.845, pos: [4, 4, -8], look: [5, 2, -40] },    // face to face with the hole, seated left
+      { t: 0.9, pos: [-4, 2, 8], look: [0, 0, -15] },      // turning to the last ember
+      { t: 0.96, pos: [0, 0, -4], look: [0, 0, -15] },     // close enough to warm your hands
+      { t: 1.0, pos: [0, 0, -4.5], look: [0, 0, -15] },    // stillness, and the dark
     ];
     this.scrollVelocity = 0;
 

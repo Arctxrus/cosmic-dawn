@@ -267,6 +267,8 @@ body.has-pointer.keyboard-nav #cursor { opacity: 0; }
   left: 50%; bottom: 30px;
   transform: translateX(-50%);
   display: flex; gap: 2.2em;
+  width: max-content;
+  white-space: nowrap;
   opacity: 0;
   pointer-events: none;
   transition: opacity 1.4s ease;
@@ -330,6 +332,8 @@ body.still-mode #cursor { display: none; }
   #epoch-index button[aria-current='true']::before { left: -11px; }
   #year-readout { left: 20px; bottom: 20px; font-size: 9px; }
   #sound-toggle { right: 20px; bottom: 20px; font-size: 9px; }
+  #credits { bottom: 56px; gap: 1.4em; }
+  #credits a, #credits span { font-size: 8px; }
   /* narrow screens: one alignment, padded clear of the widest active index label */
   .epoch-text, .epoch-text.align-right {
     align-items: flex-start;

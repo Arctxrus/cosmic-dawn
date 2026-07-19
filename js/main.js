@@ -72,7 +72,7 @@ async function boot() {
   }
 
   setProgress(0.25, 'WARMING THE ENGINES');
-  const [{ SceneRig }, { EpochManager }, { createSpark }, { createAfterglow }, { createDarkAges }, { createFirstLight }, { createWeb }, { createHome }] =
+  const [{ SceneRig }, { EpochManager }, { createSpark }, { createAfterglow }, { createDarkAges }, { createFirstLight }, { createWeb }, { createHome }, { createFading }, { createLongNight }, { createLastStar }] =
     await Promise.all([
       import('./scene.js'),
       import('./epochs/manager.js'),
@@ -82,6 +82,9 @@ async function boot() {
       import('./epochs/04-firstlight.js'),
       import('./epochs/05-web.js'),
       import('./epochs/06-home.js'),
+      import('./epochs/07-fading.js'),
+      import('./epochs/08-longnight.js'),
+      import('./epochs/09-laststar.js'),
       loadFonts(),
     ]);
   setProgress(0.6, 'PLACING THE STARS');
@@ -95,6 +98,9 @@ async function boot() {
   epochs.register(createFirstLight());
   epochs.register(createWeb());
   epochs.register(createHome());
+  epochs.register(createFading());
+  epochs.register(createLongNight());
+  epochs.register(createLastStar());
   epochs.update(timeline.rawT, 0.016, 0); // init near epochs behind the preloader
   rig.renderer.compile(rig.scene, rig.camera);
   rig.update(timeline.rawT, 0.016, 0);

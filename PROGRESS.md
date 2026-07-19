@@ -6,7 +6,23 @@ read CONCEPT.md (approved, includes Act III chronology fix + all-input-mode endi
 `.claude/agents/verifier.md` — invoke after each stage, max 3 fix cycles, commit
 `stage N: <summary> [verified]` on PASS. Never delete anything under `verify/`.
 
-## Current stage: 5 (The Fading + The Long Night + The Last Star) — building
+## Current stage: 6 (pointer interaction pass) — building
+
+### Stage 5 — The Fading + The Long Night + The Last Star ✅ PASS (2 cycles)
+Built: 07-fading.js (red giant swell → white-dwarf collapse with "exhale" bloom,
+COLLAPSE_T exported), 08-longnight.js (black hole: black disc + doppler photon ring +
+spiral infall points + 5 guttering dwarfs; DESIGN CALL: true screen-space lensing
+skipped — the spiral infall + photon ring sell the hole without a postprocessing
+pass; pointer smear/lean hooks already in shaders), 09-laststar.js (ember star,
+candle flicker, scroll-driven extinction at t=0.96, reversible). Camera through 1.0.
+Self-caught pre-verifier: giant swallowed captions (radius 26→17 + camera retreat),
+long-night black disc silhouetted into neighbor epochs (group hidden when env≈0),
+keyboard users got no ending light (fallback dot when body lacks .has-pointer).
+- Cycle 1 FAIL: mobile credits wrapped into year readout + mobile fallback dot on
+  caption text → credits nowrap/max-content + mobile bottom 56px/8px; dot to 30% height.
+- Cycle 2 PASS. Full third act verified: flicker, extinction, relight on scroll-back,
+  counter race to exactly 10¹⁰⁰, ending light on desktop-no-pointer/mobile/still.
+  60fps everywhere incl. 8x CPU throttle (GPU-bound). Screenshots: verify/stage-5/.
 
 ### Stage 4 — The Web + Home ✅ PASS (2 cycles)
 Built: 05-web.js (instanced galaxy impostors on filaments — same sine-filament family
