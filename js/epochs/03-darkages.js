@@ -76,8 +76,8 @@ export function createDarkAges() {
             p += normalize(d + 0.0001) * pull * 14.0;
             vPull = pull;
             vec4 mv = modelViewMatrix * vec4(p, 1.0);
-            float size = (0.7 + fract(aSeed * 5.3) * 1.2) * uPixelRatio;
-            gl_PointSize = size * (200.0 / -mv.z) * uEnv;
+            float size = (0.8 + fract(aSeed * 5.3) * 1.4) * uPixelRatio;
+            gl_PointSize = size * (230.0 / -mv.z) * uEnv;
             gl_Position = projectionMatrix * mv;
           }
         `,
@@ -90,10 +90,10 @@ export function createDarkAges() {
             if (d > 0.5) discard;
             float glow = pow(1.0 - d * 2.0, 2.1);
             // cold indigo hydrogen; clumped matter glows faintly warm
-            vec3 cold = vec3(0.16, 0.19, 0.34);
+            vec3 cold = vec3(0.24, 0.28, 0.5);
             vec3 warm = vec3(0.55, 0.42, 0.30);
             vec3 col = mix(cold, warm, min(1.0, vPull * 2.2 + uProgress * 0.15));
-            float a = glow * uEnv * (0.28 + vPull * 0.6);
+            float a = glow * uEnv * (0.5 + vPull * 0.6);
             gl_FragColor = vec4(col, a);
           }
         `,

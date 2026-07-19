@@ -72,12 +72,14 @@ async function boot() {
   }
 
   setProgress(0.25, 'WARMING THE ENGINES');
-  const [{ SceneRig }, { EpochManager }, { createSpark }, { createAfterglow }] =
+  const [{ SceneRig }, { EpochManager }, { createSpark }, { createAfterglow }, { createDarkAges }, { createFirstLight }] =
     await Promise.all([
       import('./scene.js'),
       import('./epochs/manager.js'),
       import('./epochs/01-spark.js'),
       import('./epochs/02-afterglow.js'),
+      import('./epochs/03-darkages.js'),
+      import('./epochs/04-firstlight.js'),
       loadFonts(),
     ]);
   setProgress(0.6, 'PLACING THE STARS');
@@ -87,6 +89,8 @@ async function boot() {
   const epochs = new EpochManager(rig);
   epochs.register(createSpark());
   epochs.register(createAfterglow());
+  epochs.register(createDarkAges());
+  epochs.register(createFirstLight());
   epochs.update(timeline.rawT, 0.016, 0); // init near epochs behind the preloader
   rig.renderer.compile(rig.scene, rig.camera);
   rig.update(timeline.rawT, 0.016, 0);

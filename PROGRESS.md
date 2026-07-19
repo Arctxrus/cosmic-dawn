@@ -6,7 +6,22 @@ read CONCEPT.md (approved, includes Act III chronology fix + all-input-mode endi
 `.claude/agents/verifier.md` — invoke after each stage, max 3 fix cycles, commit
 `stage N: <summary> [verified]` on PASS. Never delete anything under `verify/`.
 
-## Current stage: 3 (Dark Ages + First Light) — building
+## Current stage: 4 (The Web + Home) — building
+
+### Stage 3 — Dark Ages + First Light ✅ PASS (2 cycles)
+Built: js/epochs/03-darkages.js (filament field, cursor gravity-well uniform),
+04-firstlight.js (hero star rig — exported makeStarRig for reuse by HOME/FADING;
+ignition flash at t=0.35), camera through t=0.41. Self-caught pre-verifier: filaments
+too faint (alpha 0.28→0.5, size up).
+- Cycle 1 FAIL: mobile right-aligned captions collided with active index label →
+  mobile now forces left alignment for ALL epoch text, padding-left clamp(110px,30vw,130px).
+  Also fixed from observations: ignition epsilon (parked exactly at t=0.35 now reads lit),
+  pre-ignition clump alpha reduced.
+- Cycle 2 PASS. Overlap 0px², parked-at-0.35 luma 98.6 (lit), FPS 59-60 everywhere.
+- Screenshots: verify/stage-3/.
+- NOTE: subagent transcripts do NOT survive to be resumed later in this environment —
+  spawn a fresh verifier agent per cycle with a self-contained prompt (include the
+  GPU launch args, port rule, spring-settle wait, and ?debug reading instructions).
 
 ### Stage 2 — Prologue + Spark + Afterglow ✅ PASS (2 cycles)
 Built: js/epochs/{manager,util,01-spark,02-afterglow}.js wired into main loop; camera

@@ -30,7 +30,10 @@ export class SceneRig {
       { t: 0.075, pos: [0, 2, 95], look: [0, 0, 0] },  // at the shell of the detonation
       { t: 0.12, pos: [0, 6, 155], look: [0, 0, 0] },  // pushed back by the blast
       { t: 0.21, pos: [0, 0, 85], look: [0, 0, -20] }, // drifting through thinning fog
-      { t: 0.3, pos: [0, 4, 60], look: [0, 0, 0] },
+      { t: 0.25, pos: [14, 6, 95], look: [0, 0, 0] },  // slow lateral drift in the dark
+      { t: 0.29, pos: [8, 2, 88], look: [0, 0, -10] }, // a clump catches the eye
+      { t: 0.345, pos: [0, 0, 72], look: [0, 0, -10] },// drawn in toward the ignition
+      { t: 0.41, pos: [-10, 4, 96], look: [0, 0, -10] },// slow retreat from the burning star
       { t: 0.6, pos: [0, -2, 90], look: [0, 0, -30] },
       { t: 1.0, pos: [0, 0, 30], look: [0, 0, 0] },
     ];

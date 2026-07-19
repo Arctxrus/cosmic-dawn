@@ -91,7 +91,7 @@ export function makeStarRig(rig, count) {
         vec3 dust = vec3(0.2, 0.16, 0.18);
         vec3 lit = mix(uColorRim, mix(uColorMid, uColorHot, pow(vDepth, 2.2)), vDepth);
         vec3 col = mix(dust, lit, uIgnition);
-        float a = glow * uEnv * (0.1 + 0.9 * pow(vDepth, 1.5)) * (0.25 + 0.75 * uIgnition);
+        float a = glow * uEnv * (0.1 + 0.9 * pow(vDepth, 1.5)) * (0.12 + 0.88 * uIgnition);
         a += vFlare * glow * 0.6;
         gl_FragColor = vec4(col, a);
       }
@@ -136,14 +136,17 @@ export function createFirstLight() {
       u.uPixelRatio.value = rig.renderer.getPixelRatio();
       u.uRadius.value = 34 - l * 6; // the cloud tightens as it collapses
 
-      // ignition: dark clump → sudden flash at IGNITION → settled burning
+      // ignition: dark clump → sudden flash at IGNITION → settled burning.
+      // epsilon so parking exactly on the threshold still reads as lit
+      // (the spring approaches rawT from below and never quite crosses it)
+      const lit = t >= IGNITION - 0.0005;
       const ig = (t - RANGE[0]) / (IGNITION - RANGE[0]);
       const preIgnite = Math.min(1, Math.max(0, ig));
       const flash = Math.exp(-Math.pow((t - IGNITION) * 260, 2)) * 1.6; // sharp bloom at the moment
-      u.uIgnition.value = Math.pow(preIgnite, 3) * (t < IGNITION ? 0.25 : 1);
+      u.uIgnition.value = Math.pow(preIgnite, 3) * (lit ? 1 : 0.25);
       star.core.material.opacity =
-        u.uEnv.value * (t < IGNITION ? preIgnite * 0.06 : 0.55 + Math.min(1, flash));
-      star.core.scale.setScalar(26 + (t > IGNITION ? 16 : 0) + flash * 60);
+        u.uEnv.value * (lit ? 0.55 + Math.min(1, flash) : preIgnite * 0.06);
+      star.core.scale.setScalar(26 + (lit ? 16 : 0) + flash * 60);
 
       // pointer in world space near the star
       u.uPointer.value.set(rig.pointer.x * 40, rig.pointer.y * 26, -10);

@@ -330,7 +330,12 @@ body.still-mode #cursor { display: none; }
   #epoch-index button[aria-current='true']::before { left: -11px; }
   #year-readout { left: 20px; bottom: 20px; font-size: 9px; }
   #sound-toggle { right: 20px; bottom: 20px; font-size: 9px; }
-  .epoch-text { padding: 0 8vw 0 18vw; }
+  /* narrow screens: one alignment, padded clear of the widest active index label */
+  .epoch-text, .epoch-text.align-right {
+    align-items: flex-start;
+    text-align: left;
+    padding: 0 6vw 0 clamp(110px, 30vw, 130px);
+  }
   .epoch-text h2 {
     font-size: clamp(1.5rem, 8vw, 2.4rem);
     max-width: 100%;
