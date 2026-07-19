@@ -6,7 +6,25 @@ read CONCEPT.md (approved, includes Act III chronology fix + all-input-mode endi
 `.claude/agents/verifier.md` — invoke after each stage, max 3 fix cycles, commit
 `stage N: <summary> [verified]` on PASS. Never delete anything under `verify/`.
 
-## Current stage: 7 (audio + governor + mobile polish) — building
+## Current stage: 8 (final polish + deliverables) — building
+
+### Stage 7 — audio + governor bail-out + mobile polish ✅ PASS (2 cycles)
+Built: js/audio.js — fully procedural WebAudio (descending drone, temperature-tracked
+brown-noise radiation, struck-glass events at ignition/collapse, low bell at
+extinction then true silence, supernova pings in THE WEB, scroll shimmer, master
+limiter). Off by default; toggle works in scene + still modes. Governor: added
+bail-to-Still-Mode rung (T0 sustained <30fps → runtime restage); verified full chain
+T2→T1→T0→Still under 20x CPU throttle. touch-action: manipulation.
+- Cycle 1 FAIL: #sound-toggle unclickable — all:unset re-inherited #chrome's
+  pointer-events:none (cascade beat the #chrome>* restore rule) → explicit
+  pointer-events:auto on #sound-toggle and #epoch-index button. Also fixed from
+  observation: governor FPS now measured on unclamped frame time (dt clamp had
+  floored the metric at 20, slowing bail on hopeless hardware).
+- Cycle 2 PASS: real clicks + mobile tap + still-mode click all work; AudioContext
+  lifecycle verified via constructor trap; index clicks unregressed.
+- Headless limitation noted: audible output/timbre not verifiable in CI — needs one
+  human listen-through (flagged for the final report).
+- Screenshots: verify/stage-7/.
 
 ### Stage 6 — pointer interaction pass ✅ PASS (1 cycle)
 Built: unified rig.pointerStrength (fine pointer steady; touch tap = decaying 1.6

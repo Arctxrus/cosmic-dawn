@@ -3,6 +3,7 @@
 import { Timeline } from './timeline.js';
 import { UI } from './ui.js';
 import { StillMode, stillModeRequested } from './still-mode.js';
+import { CosmicAudio } from './audio.js';
 
 const params = new URLSearchParams(location.search);
 const DEBUG = params.has('debug');
@@ -56,13 +57,25 @@ async function boot() {
   const ui = new UI(timeline);
   const stillWhy = stillModeRequested();
 
+  // sound: off by default, synthesized on demand, works in every mode
+  const audio = new CosmicAudio();
+  const soundBtn = document.getElementById('sound-toggle');
+  soundBtn.addEventListener('click', async () => {
+    const on = await audio.toggle();
+    soundBtn.textContent = on ? 'SOUND — ON' : 'SOUND — OFF';
+    soundBtn.setAttribute('aria-pressed', String(on));
+  });
+
   if (stillWhy) {
     await loadFonts();
     setProgress(0.9);
     // no rAF loop in still mode → eased jumps can't run; jump instantly instead
     timeline.jumpTo = (t) => window.scrollTo(0, t * (document.documentElement.scrollHeight - innerHeight));
     const still = new StillMode(ui, timeline);
-    const step = () => still.update(timeline.rawT);
+    const step = () => {
+      still.update(timeline.rawT);
+      audio.update(timeline.rawT, 0.016, 0);
+    };
     window.addEventListener('scroll', step, { passive: true });
     window.addEventListener('resize', step, { passive: true });
     step();
@@ -115,8 +128,25 @@ async function boot() {
   let governorArmed = false;
   setTimeout(() => { governorArmed = true; }, 4000); // ignore boot turbulence
 
+  let bailed = false;
+  function bailToStill() {
+    // even T0 can't hold a frame rate — restage the piece rather than stutter
+    bailed = true;
+    const still = new StillMode(ui, timeline);
+    timeline.jumpTo = (tt) => window.scrollTo(0, tt * (document.documentElement.scrollHeight - innerHeight));
+    const step = () => {
+      still.update(timeline.rawT);
+      audio.update(timeline.rawT, 0.016, 0);
+    };
+    window.addEventListener('scroll', step, { passive: true });
+    window.addEventListener('resize', step, { passive: true });
+    step();
+  }
+
   function frame(now) {
-    const dt = Math.min(0.05, (now - last) / 1000);
+    if (bailed) return;
+    const rawDt = (now - last) / 1000; // unclamped: the honest frame time
+    const dt = Math.min(0.05, rawDt);
     last = now;
     const time = now / 1000;
 
@@ -126,10 +156,11 @@ async function boot() {
     rig.update(timeline.t, dt, time);
     rig.render();
     ui.update(timeline.t);
+    audio.update(timeline.t, dt, timeline.velocity);
 
-    // rolling FPS + downshift-only governor
-    if (dt > 0) {
-      fpsWindow.push(1 / dt);
+    // rolling FPS + downshift-only governor (measured on unclamped frame time)
+    if (rawDt > 0) {
+      fpsWindow.push(1 / rawDt);
       if (fpsWindow.length > 120) fpsWindow.shift();
       fps = fpsWindow.reduce((a, b) => a + b, 0) / fpsWindow.length;
       if (governorArmed && fpsWindow.length >= 120 && fps < 48 && tier > 0) {
@@ -138,6 +169,9 @@ async function boot() {
         fpsWindow.length = 0;
         governorArmed = false;
         setTimeout(() => { governorArmed = true; }, 3000);
+      } else if (governorArmed && fpsWindow.length >= 120 && fps < 30 && tier === 0) {
+        bailToStill();
+        return;
       }
     }
     requestAnimationFrame(frame);
