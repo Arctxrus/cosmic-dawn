@@ -39,11 +39,16 @@ Screenshots: verify/blackhole/. What shipped:
   no tint, over-arc 1.67x under-arc, 60fps T2+L.
 - Software-WebGL (SwiftShader) run: full chain verified — T2+L → T1 (6.5s) → T0
   (12.7s) → Still Mode bailout (25.4s); post-bail scroll steps still frames and the
-  native cursor is restored. KNOWN LIMITATION: the Claude Code in-app browser
-  hard-freezes the entire tab; when a tab halts completely, JS timers freeze with
-  the rAF loop, so no in-page watchdog can fire. The watchdogs cover every case
-  where the page itself still gets CPU (stalled rAF, lost context, slow boot,
-  crashed boot). The full-tab freeze is beyond in-page recovery — accepted.
+  native cursor is restored. IN-APP BROWSER UPDATE: the hard-freeze the Claude
+  in-app pane exhibited was reproduced only by the PRE-Gargantua build; after the
+  redesign (half-float lens RT, old infall/ring meshes removed) the pane runs the
+  FULL piece at 118-120fps T2+L — verified with a 15-stop journey inside the pane
+  itself (UA `Claude/… Electron/42.5.1`, real RTX 3060 via ANGLE). An Electron
+  auto-still guard was prototyped and then removed as obsolete. RESIDUAL known
+  limitation (unchanged in principle): if any embedder ever halts the whole tab,
+  JS timers freeze with the rAF loop and no in-page watchdog can fire — the
+  watchdogs cover every case where the page still gets CPU; `?still` remains the
+  manual escape hatch.
 
 ## Previous status: 8 stages + final revision pass (detail below)
 
