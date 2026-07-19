@@ -1,14 +1,17 @@
 // Single source of truth: epochs, ranges, copy, time mapping, still-mode palettes.
 // All timeline values t are 0..1 across the full scroll.
 
+// PLACEHOLDER: set to the live portfolio URL when the portfolio site exists.
+export const PORTFOLIO_URL = null;
+
 export const SITE = {
   title: 'UNTIL THE LAST STAR',
   titleLines: ['UNTIL', 'THE LAST', 'STAR'], // middle line set italic
   subtitle: 'THE WHOLE OF TIME, COMPRESSED INTO ONE SCROLL',
   credits: [
-    { label: 'MADE BY ZAYN', href: null },
-    { label: 'CODE', href: 'https://github.com/' },
-    { label: 'PORTFOLIO', href: '../' },
+    { label: 'MADE BY ZAYN', href: 'https://github.com/Arctxrus' },
+    { label: 'CODE', href: 'https://github.com/Arctxrus/cosmic-dawn' },
+    { label: 'PORTFOLIO', href: PORTFOLIO_URL },
   ],
 };
 

@@ -120,7 +120,7 @@ export function createAfterglow() {
             vec2 c = gl_PointCoord - 0.5;
             float d = length(c);
             if (d > 0.5) discard;
-            float glow = pow(1.0 - d * 2.0, 2.0);
+            float glow = pow(1.0 - d * 2.0, 2.8) + smoothstep(0.2, 0.06, d) * 0.4;
             vec3 col = mix(vec3(1.0, 0.72, 0.42), vec3(0.75, 0.3, 0.16), uProgress);
             gl_FragColor = vec4(col, glow * uEnv * 0.8);
           }

@@ -8,7 +8,7 @@ import { GLSL_NOISE, localT, envelope, randDir, makeCoreGlow } from './util.js';
 import { EXTINCTION_T } from '../content.js';
 
 const RANGE = [0.90, 1.0];
-const COUNT = { 2: 30000, 1: 20000, 0: 12000 };
+const COUNT = { 2: 45000, 1: 20000, 0: 12000 };
 const STAR_POS = new THREE.Vector3(0, 0, -15);
 
 export function createLastStar() {
@@ -81,7 +81,7 @@ export function createLastStar() {
             vec2 c = gl_PointCoord - 0.5;
             float d = length(c);
             if (d > 0.5) discard;
-            float glow = pow(1.0 - d * 2.0, 2.0);
+            float glow = pow(1.0 - d * 2.0, 2.9) + smoothstep(0.2, 0.06, d) * 0.5;
             vec3 ember = vec3(0.54, 0.16, 0.11);
             vec3 warm = vec3(1.0, 0.62, 0.34);
             vec3 col = mix(ember, warm, pow(vDepth, 1.8) * (1.0 - uDying * 0.6));

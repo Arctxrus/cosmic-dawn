@@ -108,6 +108,17 @@ export class SceneRig {
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     geo.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
 
+    // scorch map: where the visitor has rekindled dying stars, in screen space.
+    // It accumulates and persists — those stars genuinely gutter out sooner.
+    this._scorchCanvas = document.createElement('canvas');
+    this._scorchCanvas.width = 128;
+    this._scorchCanvas.height = 64;
+    this._scorchCtx = this._scorchCanvas.getContext('2d');
+    this._scorchCtx.fillStyle = '#000';
+    this._scorchCtx.fillRect(0, 0, 128, 64);
+    this._scorchTex = new THREE.CanvasTexture(this._scorchCanvas);
+    this._scorchDirty = false;
+
     this.skyUniforms = {
       uTime: { value: 0 },
       uT: { value: 0 },        // timeline 0..1
@@ -116,6 +127,8 @@ export class SceneRig {
       uPointerNdc: { value: new THREE.Vector2(0, 0) },
       uPointerStrength: { value: 0 },
       uRekindle: { value: 0 }, // THE FADING: stars near the cursor burn up briefly
+      uScorch: { value: this._scorchTex },
+      uScorchFade: { value: 0 }, // how hard scorched stars are penalized
       uPixelRatio: { value: this.renderer.getPixelRatio() },
     };
 
@@ -128,7 +141,8 @@ export class SceneRig {
         attribute float aSeed;
         uniform float uTime, uDensity, uPixelRatio, uPointerStrength, uRekindle;
         uniform vec2 uPointerNdc;
-        varying float vSeed, vTwinkle, vNear;
+        varying float vSeed, vTwinkle, vNear, vRevive;
+        varying vec2 vNdc;
         void main() {
           vSeed = aSeed;
           vec4 mv = modelViewMatrix * vec4(position, 1.0);
@@ -140,18 +154,25 @@ export class SceneRig {
           vec2 ndc = clip.xy / max(0.0001, clip.w);
           float near = exp(-dot(ndc - uPointerNdc, ndc - uPointerNdc) * 14.0) * uPointerStrength;
           vNear = near;
-          gl_PointSize = size * visible * (300.0 / -mv.z) * (1.0 + near * (0.35 + uRekindle * 2.2));
+          vNdc = ndc;
+          // rekindle: recently-died stars spring back to life near your hand
+          float recentlyDied = step(aSeed, min(1.0, uDensity + 0.3)) * (1.0 - visible);
+          vRevive = recentlyDied * min(1.0, near * 2.2) * uRekindle;
+          visible = max(visible, vRevive);
+          gl_PointSize = size * visible * (300.0 / -mv.z) * (1.0 + near * (0.35 + uRekindle * 2.2) + vRevive * 1.4);
           gl_Position = clip;
         }
       `,
       fragmentShader: /* glsl */ `
-        uniform float uTempMix, uRekindle;
-        varying float vSeed, vTwinkle, vNear;
+        uniform float uTempMix, uRekindle, uScorchFade;
+        uniform sampler2D uScorch;
+        varying float vSeed, vTwinkle, vNear, vRevive;
+        varying vec2 vNdc;
         void main() {
           vec2 c = gl_PointCoord - 0.5;
           float d = length(c);
           if (d > 0.5) discard;
-          float glow = pow(1.0 - d * 2.0, 2.2);
+          float glow = pow(1.0 - d * 2.0, 3.0) + smoothstep(0.22, 0.06, d) * 0.5;
           // per-star temperature scatter around the era's global temperature
           vec3 cool = vec3(0.75, 0.83, 1.0);
           vec3 warm = vec3(1.0, 0.85, 0.62);
@@ -159,9 +180,13 @@ export class SceneRig {
           float t = clamp(uTempMix + (fract(vSeed * 13.7) - 0.5) * 0.4, 0.0, 1.0);
           vec3 col = t < 0.5 ? mix(cool, warm, t * 2.0) : mix(warm, red, (t - 0.5) * 2.0);
           // illumination near the cursor; in THE FADING it becomes rekindling —
-          // a dying star flaring gold under your hand, unable to keep it
-          col = mix(col, vec3(1.0, 0.83, 0.55), min(1.0, vNear * (0.4 + uRekindle)));
+          // dying stars flare gold under your hand, unable to keep it
+          col = mix(col, vec3(1.0, 0.83, 0.55), min(1.0, vNear * (0.4 + uRekindle) + vRevive));
           float a = glow * vTwinkle * (1.0 + vNear * (0.3 + uRekindle * 2.6));
+          a += vRevive * glow * 0.9; // the revived burn bright — briefly
+          // the memory of your touch: stars you rekindled gutter out sooner
+          float scorch = texture2D(uScorch, vNdc * 0.5 + 0.5).r;
+          a *= 1.0 - scorch * uScorchFade * (1.0 - min(1.0, vNear));
           gl_FragColor = vec4(col, min(1.0, a));
         }
       `,
@@ -196,6 +221,30 @@ export class SceneRig {
     const inFading = t > 0.68 && t < 0.79;
     const fadeEdge = inFading ? Math.min((t - 0.68) / 0.02, (0.79 - t) / 0.02, 1) : 0;
     u.uRekindle.value = Math.max(0, fadeEdge);
+
+    // scorch memory: stamp where the visitor rekindles; the penalty deepens
+    // as the epoch advances, so touched stars visibly die ahead of the rest
+    if (inFading && this.pointerStrength > 0.05) {
+      const ctx = this._scorchCtx;
+      const x = (this.pointer.x * 0.5 + 0.5) * 128;
+      const y = (1 - (this.pointer.y * 0.5 + 0.5)) * 64;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, 9);
+      g.addColorStop(0, `rgba(255,255,255,${0.09 * Math.min(1, this.pointerStrength)})`);
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(x - 9, y - 9, 18, 18);
+      this._scorchTex.needsUpdate = true;
+      this._scorchDirty = true;
+    }
+    const fadingLocal = inFading ? (t - 0.68) / 0.11 : t >= 0.79 ? 1 : 0;
+    u.uScorchFade.value = Math.min(1.0, fadingLocal * 1.6) * (t < 0.79 ? 1 : 0);
+    // scrolling back before the epoch resets the memory (replays start clean)
+    if (t < 0.66 && this._scorchDirty) {
+      this._scorchCtx.fillStyle = '#000';
+      this._scorchCtx.fillRect(0, 0, 128, 64);
+      this._scorchTex.needsUpdate = true;
+      this._scorchDirty = false;
+    }
   }
 
   _camAt(t, out) {
@@ -225,6 +274,9 @@ export class SceneRig {
     const py = this.pointer.y * 1.6;
     this.camera.position.set(cam.pos[0] + px, cam.pos[1] + py, cam.pos[2]);
     this.camera.lookAt(cam.look[0] + px * 0.35, cam.look[1] + py * 0.35, cam.look[2]);
+    // portrait framing: pitch the view down a touch so hero objects ride
+    // higher in the frame, clearing the caption zone (text-protection layer)
+    if (this.camera.aspect < 0.8) this.camera.rotateX(-0.12);
     this._ageSky(t, time);
     // background deepens from dusk navy → void black across all time
     const bg = new THREE.Color('#10122A').lerp(new THREE.Color('#08070F'), Math.min(1, t * 1.6));

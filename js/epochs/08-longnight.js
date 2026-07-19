@@ -6,12 +6,14 @@
 import * as THREE from 'three';
 import { GLSL_NOISE, localT, envelope, makeCoreGlow } from './util.js';
 
-const RANGE = [0.79, 0.90];
+export const RANGE = [0.79, 0.90];
 const INFALL = { 2: 24000, 1: 14000, 0: 8000 };
-const HOLE_POS = new THREE.Vector3(0, 2, -40);
+export const HOLE_POS = new THREE.Vector3(0, 2, -40);
+export const HOLE_RADIUS = 5.2;
 
 export function createLongNight() {
   let group = null, infallUniforms = null, ringMat = null, dwarfs = [];
+  let disc = null, fakeRing = null;
 
   return {
     id: 'long-night',
@@ -20,9 +22,10 @@ export function createLongNight() {
     init(rig) {
       group = new THREE.Group();
 
-      // --- the hole: a disc of absolute black ---
-      const disc = new THREE.Mesh(
-        new THREE.CircleGeometry(5.2, 48),
+      // --- the hole: a disc of absolute black (the T1/T0 fake; at T2 the
+      // screen-space lens pass draws the shadow instead) ---
+      disc = new THREE.Mesh(
+        new THREE.CircleGeometry(HOLE_RADIUS, 48),
         new THREE.MeshBasicMaterial({ color: 0x000000 })
       );
       disc.position.copy(HOLE_POS);
@@ -67,10 +70,10 @@ export function createLongNight() {
           }
         `,
       });
-      const ring = new THREE.Mesh(new THREE.PlaneGeometry(13, 13), ringMat);
-      ring.position.copy(HOLE_POS);
-      ring.position.z += 0.01;
-      group.add(ring);
+      fakeRing = new THREE.Mesh(new THREE.PlaneGeometry(13, 13), ringMat);
+      fakeRing.position.copy(HOLE_POS);
+      fakeRing.position.z += 0.01;
+      group.add(fakeRing);
 
       // --- infalling light: a slow spiral being wound in ---
       const n = INFALL[rig.tier];
@@ -126,7 +129,7 @@ export function createLongNight() {
             vec2 c = gl_PointCoord - 0.5;
             float d = length(c);
             if (d > 0.5) discard;
-            float glow = pow(1.0 - d * 2.0, 2.0);
+            float glow = pow(1.0 - d * 2.0, 2.8) + smoothstep(0.2, 0.06, d) * 0.4;
             // cold far out, heated white as it approaches the ring
             vec3 cold = vec3(0.45, 0.3, 0.28);
             vec3 hotc = vec3(1.0, 0.85, 0.65);
@@ -166,6 +169,9 @@ export function createLongNight() {
       // the disc is opaque black — it must never silhouette into other epochs
       group.visible = env > 0.004;
       if (!group.visible) return;
+      // at T2 the lens pass draws shadow + ring in screen space instead
+      disc.visible = !rig.lensActive;
+      fakeRing.visible = !rig.lensActive;
       ringMat.uniforms.uEnv.value = env;
       ringMat.uniforms.uTime.value = time;
       ringMat.uniforms.uPointer.value.set(rig.pointer.x, rig.pointer.y);

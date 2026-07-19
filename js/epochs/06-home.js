@@ -8,7 +8,7 @@ import { localT, envelope, makeCoreGlow } from './util.js';
 import { makeStarRig } from './04-firstlight.js';
 
 const RANGE = [0.53, 0.68];
-const GALAXY = { 2: 90000, 1: 55000, 0: 30000 };
+const GALAXY = { 2: 120000, 1: 55000, 0: 30000 };
 const SUN_COUNT = { 2: 60000, 1: 36000, 0: 20000 };
 
 const SUN_POS = new THREE.Vector3(26, 3, -35);
@@ -92,7 +92,7 @@ export function createHome() {
             vec2 c = gl_PointCoord - 0.5;
             float d = length(c);
             if (d > 0.5) discard;
-            float glow = pow(1.0 - d * 2.0, 2.1);
+            float glow = pow(1.0 - d * 2.0, 3.0) + smoothstep(0.2, 0.06, d) * 0.5;
             vec3 core = vec3(1.0, 0.88, 0.68);
             vec3 arms = vec3(0.7, 0.8, 1.0);
             vec3 col = mix(arms, core, vCore + fract(vSeed * 4.7) * 0.25);

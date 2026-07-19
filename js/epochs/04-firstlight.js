@@ -9,7 +9,7 @@ import * as THREE from 'three';
 import { GLSL_NOISE, localT, envelope, randDir, makeCoreGlow } from './util.js';
 
 const RANGE = [0.29, 0.41];
-const COUNT = { 2: 120000, 1: 70000, 0: 40000 };
+const COUNT = { 2: 160000, 1: 70000, 0: 40000 };
 export const IGNITION = 0.35; // timeline t of the ignition flash
 
 /** Shared particle-star rig. radius/color/behaviour via uniforms. */
@@ -86,7 +86,7 @@ export function makeStarRig(rig, count) {
         vec2 c = gl_PointCoord - 0.5;
         float d = length(c);
         if (d > 0.5) discard;
-        float glow = pow(1.0 - d * 2.0, 2.0);
+        float glow = pow(1.0 - d * 2.0, 3.0) + smoothstep(0.22, 0.06, d) * 0.55;
         // dark clump: cold dust. burning: rim→mid→blown core
         vec3 dust = vec3(0.2, 0.16, 0.18);
         vec3 lit = mix(uColorRim, mix(uColorMid, uColorHot, pow(vDepth, 2.2)), vDepth);

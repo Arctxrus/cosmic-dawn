@@ -47,6 +47,8 @@ export function createFading() {
 
       // radius: 3 → 17 (giant) → 0.9 (dwarf); churn grows with the swelling
       u.uRadius.value = 3 + swell * 14 - collapse * (3 + swell * 14 - 0.9);
+      // portrait: the giant swells less so the headline keeps a dark field
+      if (rig.camera.aspect < 0.8) u.uRadius.value *= 0.72;
       u.uChurn.value = 0.7 + swell * 1.6 - collapse * 1.8;
 
       // colors: yellow-white → deep red giant → pale blue-white dwarf

@@ -78,7 +78,7 @@ export function createSpark() {
             vec2 c = gl_PointCoord - 0.5;
             float d = length(c);
             if (d > 0.5) discard;
-            float glow = pow(1.0 - d * 2.0, 1.9);
+            float glow = pow(1.0 - d * 2.0, 2.8) + smoothstep(0.2, 0.05, d) * 0.5;
             vec3 violet = vec3(0.79, 0.77, 1.0);
             vec3 white  = vec3(1.0, 0.98, 0.93);
             vec3 amber  = vec3(0.88, 0.55, 0.30);

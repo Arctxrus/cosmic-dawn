@@ -104,6 +104,21 @@ async function boot() {
 
   let tier = detectTier();
   const rig = new SceneRig(document.getElementById('scene'), tier);
+  rig.lensActive = false;
+
+  // real gravitational lensing — T2 only; first thing the governor drops
+  const [{ LensPass }, { localT, envelope }, longnightMeta] = await Promise.all([
+    import('./lensing.js'),
+    import('./epochs/util.js'),
+    import('./epochs/08-longnight.js'),
+  ]);
+  let lensEnabled = tier === 2;
+  const lens = lensEnabled ? new LensPass(rig.renderer) : null;
+  const sizeLens = () => {
+    if (lens) lens.setSize(innerWidth, innerHeight, rig.renderer.getPixelRatio());
+  };
+  sizeLens();
+  window.addEventListener('resize', sizeLens);
   const epochs = new EpochManager(rig);
   epochs.register(createSpark());
   epochs.register(createAfterglow());
@@ -152,9 +167,15 @@ async function boot() {
 
     timeline.update(dt);
     rig.scrollVelocity = timeline.velocity;
+    const lensEnv = envelope(localT(timeline.t, longnightMeta.RANGE), 0.12, 0.1);
+    rig.lensActive = lensEnabled && tier === 2 && lensEnv > 0.004;
     epochs.update(timeline.t, dt, time);
     rig.update(timeline.t, dt, time);
-    rig.render();
+    if (rig.lensActive) {
+      lens.render(rig, longnightMeta.HOLE_POS, longnightMeta.HOLE_RADIUS, lensEnv, time);
+    } else {
+      rig.render();
+    }
     ui.update(timeline.t);
     audio.update(timeline.t, dt, timeline.velocity);
 
@@ -163,7 +184,14 @@ async function boot() {
       fpsWindow.push(1 / rawDt);
       if (fpsWindow.length > 120) fpsWindow.shift();
       fps = fpsWindow.reduce((a, b) => a + b, 0) / fpsWindow.length;
-      if (governorArmed && fpsWindow.length >= 120 && fps < 48 && tier > 0) {
+      if (governorArmed && fpsWindow.length >= 60 && fps < 55 && rig.lensActive) {
+        // the lens pass is the first sacrifice — before any tier drop
+        lensEnabled = false;
+        rig.lensActive = false;
+        fpsWindow.length = 0;
+        governorArmed = false;
+        setTimeout(() => { governorArmed = true; }, 3000);
+      } else if (governorArmed && fpsWindow.length >= 120 && fps < 48 && tier > 0) {
         tier -= 1;
         rig.applyTier(tier);
         fpsWindow.length = 0;
@@ -178,7 +206,7 @@ async function boot() {
   }
   requestAnimationFrame(frame);
 
-  if (DEBUG) initDebug(() => ({ fps: fps.toFixed(0), tier: `T${tier}`, t: timeline.t, raw: timeline.rawT }));
+  if (DEBUG) initDebug(() => ({ fps: fps.toFixed(0), tier: `T${tier}${lensEnabled ? '+L' : ''}`, t: timeline.t, raw: timeline.rawT }));
 }
 
 function initDebug(read) {

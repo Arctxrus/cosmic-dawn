@@ -88,7 +88,7 @@ export function createDarkAges() {
             vec2 c = gl_PointCoord - 0.5;
             float d = length(c);
             if (d > 0.5) discard;
-            float glow = pow(1.0 - d * 2.0, 2.1);
+            float glow = pow(1.0 - d * 2.0, 2.9) + smoothstep(0.2, 0.06, d) * 0.4;
             // cold indigo hydrogen; clumped matter glows faintly warm
             vec3 cold = vec3(0.24, 0.28, 0.5);
             vec3 warm = vec3(0.55, 0.42, 0.30);
