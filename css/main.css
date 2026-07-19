@@ -1,0 +1,339 @@
+/* ============================================================
+   UNTIL THE LAST STAR — interface layer
+   Two voices: Bodoni Moda (display) · Martian Mono (telemetry)
+   Opacity system: 100 active · 55 secondary · 30 resting · 12 hairline
+   ============================================================ */
+
+:root {
+  --void: #08070F;
+  --dusk: #10122A;
+  --paper: #EDE9E0;
+  --ember: #E4B85C;
+  --op-active: 1;
+  --op-secondary: 0.55;
+  --op-resting: 0.3;
+  --op-hairline: 0.12;
+  --mono: 'Martian Mono', 'Courier New', monospace;
+  --serif: 'Bodoni Moda', 'Didot', 'Times New Roman', serif;
+  --track-h: 3200vh;
+}
+
+@media (max-width: 768px) {
+  :root { --track-h: 2300vh; }
+}
+
+* { box-sizing: border-box; }
+
+html {
+  background: var(--dusk);
+  scroll-behavior: auto; /* jumps are custom-eased in JS */
+}
+
+body {
+  margin: 0;
+  background: var(--dusk);
+  color: var(--paper);
+  font-family: var(--mono);
+  overflow-x: hidden;
+}
+
+/* ---- scroll track (the timeline) ---- */
+#track { height: var(--track-h); pointer-events: none; }
+
+/* ---- scene canvas ---- */
+#scene {
+  position: fixed; inset: 0; width: 100%; height: 100%;
+  display: block; z-index: 1;
+}
+
+/* ---- shared micro voice ---- */
+.micro {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--paper);
+  line-height: 1.6;
+}
+.dim { opacity: var(--op-resting); }
+
+/* ---- preloader ---- */
+#pre-line {
+  width: min(320px, 60vw); height: 1px;
+  background: rgba(237, 233, 224, var(--op-hairline));
+}
+#pre-fill {
+  width: 0%; height: 100%;
+  background: var(--ember);
+  transition: width 0.3s ease;
+}
+#pre-wordmark { opacity: var(--op-secondary); margin: 0; }
+#pre-status { margin: 0; }
+
+/* ---- narrative layer ---- */
+#narrative {
+  position: fixed; inset: 0; z-index: 3;
+  pointer-events: none;
+}
+
+#title-lockup {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  transition: opacity 0.4s ease;
+}
+#title-lockup h1 {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 500;
+  font-optical-sizing: auto;
+  font-size: clamp(3.2rem, 16.5vh, 12.5rem);
+  line-height: 0.98;
+  letter-spacing: 0.045em;
+  color: var(--paper);
+}
+#title-lockup .line { display: block; }
+#title-lockup .italic { font-style: italic; font-weight: 400; }
+#subtitle { margin-top: 3.2rem; }
+
+.epoch-text {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  justify-content: center;
+  padding: 0 8vw;
+  opacity: 0;
+  visibility: hidden;
+}
+.epoch-text.visible { visibility: visible; opacity: 1; }
+.epoch-text h2 {
+  margin: 0 0 2.4rem;
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(1.9rem, 7.5vh, 5.2rem);
+  line-height: 1.02;
+  letter-spacing: 0.03em;
+  max-width: 14ch;
+}
+.epoch-text .caption {
+  margin: 0 0 1.5rem;
+  font-size: 13px;
+  line-height: 1.9;
+  letter-spacing: 0.06em;
+  max-width: 38ch;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.9s ease, transform 0.9s ease;
+}
+.epoch-text .caption.on { opacity: var(--op-secondary); transform: none; }
+.epoch-text h2 {
+  opacity: 0; transform: translateY(14px);
+  transition: opacity 1.1s ease, transform 1.1s ease;
+}
+.epoch-text.visible h2 { opacity: 1; transform: none; }
+
+/* right-aligned variants keep long journeys compositionally varied */
+.epoch-text.align-right { align-items: flex-end; text-align: right; }
+
+/* ---- chrome ---- */
+#chrome { position: fixed; inset: 0; z-index: 4; pointer-events: none; }
+#chrome > * { pointer-events: auto; }
+
+#wordmark {
+  position: absolute; top: 28px; left: 32px;
+  text-decoration: none;
+  opacity: var(--op-resting);
+  transition: opacity 0.3s ease;
+}
+#wordmark:hover, #wordmark:focus-visible { opacity: var(--op-secondary); }
+
+/* epoch index — the entire navigation */
+#epoch-index {
+  position: absolute; left: 32px; top: 50%;
+  transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 14px;
+  border-left: 1px solid rgba(237, 233, 224, var(--op-hairline));
+  padding-left: 16px;
+}
+#epoch-index button {
+  all: unset;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--paper);
+  opacity: var(--op-resting);
+  transition: opacity 0.35s ease;
+  position: relative;
+  line-height: 1;
+  padding: 2px 0;
+}
+#epoch-index button:hover { opacity: var(--op-secondary); }
+#epoch-index button[aria-current='true'] { opacity: var(--op-active); }
+#epoch-index button[aria-current='true']::before {
+  content: '';
+  position: absolute; left: -17px; top: 50%;
+  width: 2px; height: 12px;
+  transform: translateY(-50%);
+  background: var(--ember);
+}
+
+#year-readout {
+  position: absolute; left: 32px; bottom: 28px;
+  margin: 0;
+  opacity: var(--op-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+#year-readout sup { font-size: 0.65em; }
+
+#sound-toggle {
+  all: unset;
+  position: absolute; right: 32px; bottom: 28px;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--paper);
+  opacity: var(--op-resting);
+  transition: opacity 0.3s ease;
+}
+#sound-toggle:hover, #sound-toggle:focus-visible { opacity: var(--op-secondary); }
+
+#scroll-whisper {
+  position: absolute; left: 50%; bottom: 34px;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  transition: opacity 1.2s ease;
+}
+#scroll-whisper.gone { opacity: 0 !important; }
+#whisper-line {
+  width: 1px; height: 34px;
+  background: linear-gradient(rgba(237, 233, 224, 0.4), transparent);
+  animation: whisper-drain 2.6s ease-in-out infinite;
+}
+@keyframes whisper-drain {
+  0% { transform: scaleY(0); transform-origin: top; }
+  55% { transform: scaleY(1); transform-origin: top; }
+  100% { transform: scaleY(1) translateY(8px); opacity: 0; }
+}
+
+/* focus */
+:focus-visible { outline: 1px solid var(--ember); outline-offset: 4px; }
+
+/* ---- custom cursor ---- */
+#cursor {
+  position: fixed; z-index: 10;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--ember);
+  box-shadow: 0 0 14px 2px rgba(228, 184, 92, 0.45);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  left: 0; top: 0;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+body.has-pointer #cursor { opacity: 1; }
+body.has-pointer.keyboard-nav #cursor { opacity: 0; }
+@media (hover: hover) and (pointer: fine) {
+  body.has-pointer { cursor: none; }
+  body.has-pointer a, body.has-pointer button { cursor: none; }
+}
+
+/* the last light (touch / keyboard / still endings) */
+#ending-light {
+  position: fixed; z-index: 9;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--ember);
+  box-shadow: 0 0 18px 4px rgba(228, 184, 92, 0.5);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  animation: ember-breathe 3.2s ease-in-out infinite;
+}
+@keyframes ember-breathe {
+  0%, 100% { box-shadow: 0 0 18px 4px rgba(228, 184, 92, 0.5); }
+  50% { box-shadow: 0 0 26px 7px rgba(228, 184, 92, 0.7); }
+}
+
+/* ---- credits (final frame only; ui.js toggles .visible) ---- */
+#credits {
+  position: fixed; z-index: 4;
+  left: 50%; bottom: 30px;
+  transform: translateX(-50%);
+  display: flex; gap: 2.2em;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.4s ease;
+}
+#credits.visible { opacity: var(--op-resting); pointer-events: auto; }
+#credits a, #credits span {
+  color: var(--paper); text-decoration: none;
+  font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
+}
+#credits a:hover { color: var(--ember); }
+
+/* ---- still mode ---- */
+#still { position: fixed; inset: 0; z-index: 2; }
+.still-frame {
+  position: absolute; inset: 0;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+.still-frame.active { opacity: 1; }
+.still-frame canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+body.still-mode #scene { display: none; }
+body.still-mode #cursor { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .still-frame { transition: none; }
+  #whisper-line { animation: none; }
+  #ending-light { animation: none; }
+  .epoch-text h2, .epoch-text .caption { transition: none; }
+}
+
+/* ---- debug ---- */
+#debug {
+  position: fixed; top: 28px; right: 32px; z-index: 20;
+  text-align: right;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+  white-space: pre;
+}
+
+/* ---- noscript ---- */
+.noscript {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--dusk); color: var(--paper);
+  font-family: var(--mono); font-size: 12px; line-height: 2;
+  padding: 10vw; text-align: center;
+}
+
+/* ---- mobile ---- */
+@media (max-width: 768px) {
+  #wordmark { top: 20px; left: 20px; font-size: 9px; }
+  #epoch-index { left: 12px; padding-left: 10px; gap: 12px; }
+  /* collapse to ticks: hide label text except active */
+  #epoch-index button { font-size: 0; }
+  #epoch-index button::after {
+    content: ''; display: block; width: 12px; height: 2px;
+    background: var(--paper); opacity: 0.6;
+  }
+  #epoch-index button[aria-current='true'] { font-size: 8px; }
+  #epoch-index button[aria-current='true']::after { display: none; }
+  #epoch-index button[aria-current='true']::before { left: -11px; }
+  #year-readout { left: 20px; bottom: 20px; font-size: 9px; }
+  #sound-toggle { right: 20px; bottom: 20px; font-size: 9px; }
+  .epoch-text { padding: 0 8vw 0 18vw; }
+  .epoch-text h2 {
+    font-size: clamp(1.5rem, 8vw, 2.4rem);
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
+  .epoch-text .caption { font-size: 12px; max-width: 100%; }
+  #title-lockup h1 { font-size: clamp(2.6rem, 13vw, 5rem); letter-spacing: 0.03em; }
+  #subtitle { margin-top: 2rem; padding: 0 8vw; font-size: 8px; }
+}

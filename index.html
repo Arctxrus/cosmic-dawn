@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Until the Last Star</title>
+  <meta name="description" content="The whole of time, compressed into one scroll. A journey from the first instant to the death of the last star." />
+  <meta name="theme-color" content="#10122A" />
+  <meta property="og:title" content="Until the Last Star" />
+  <meta property="og:description" content="The whole of time, compressed into one scroll." />
+  <style>
+    /* Critical: no white flash, ever. */
+    html { background: #10122A; }
+    body { margin: 0; background: #10122A; }
+    #preloader {
+      position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 2.2rem; background: #10122A;
+      transition: opacity 1.1s ease; }
+    #preloader.done { opacity: 0; pointer-events: none; }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Martian+Mono:wght@300..600&display=swap" />
+  <link rel="stylesheet" href="css/main.css" />
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.171.0/build/three.module.js" } }
+  </script>
+</head>
+<body>
+  <!-- Act zero: the preloader is the story's first frame -->
+  <div id="preloader" aria-hidden="true">
+    <p class="micro" id="pre-wordmark">UNTIL THE LAST STAR</p>
+    <div id="pre-line"><div id="pre-fill"></div></div>
+    <p class="micro dim" id="pre-status">CALIBRATING 13,800,000,000 YEARS</p>
+  </div>
+
+  <!-- The scroll track: empty height; scrolling it is the timeline -->
+  <div id="track" aria-hidden="true"></div>
+
+  <!-- The scene -->
+  <canvas id="scene" aria-hidden="true"></canvas>
+
+  <!-- Still Mode frames (built by JS when active) -->
+  <div id="still" hidden></div>
+
+  <!-- Narrative layer: real text, revealed by the timeline -->
+  <main id="narrative">
+    <section id="title-lockup" aria-label="Until the Last Star">
+      <h1>
+        <span class="line">UNTIL</span>
+        <span class="line italic">THE LAST</span>
+        <span class="line">STAR</span>
+      </h1>
+      <p class="micro dim" id="subtitle">THE WHOLE OF TIME, COMPRESSED INTO ONE SCROLL</p>
+    </section>
+    <!-- epoch headings + captions injected by ui.js -->
+  </main>
+
+  <!-- Interface: the complete UI inventory -->
+  <header id="chrome">
+    <a href="#top" id="wordmark" class="micro">UNTIL THE LAST STAR</a>
+    <nav id="epoch-index" aria-label="Epochs"><!-- buttons injected --></nav>
+    <p id="year-readout" class="micro" aria-live="off">T = 0</p>
+    <button id="sound-toggle" class="micro" aria-pressed="false">SOUND — OFF</button>
+    <div id="scroll-whisper" class="micro dim" aria-hidden="true">SCROLL<span id="whisper-line"></span></div>
+  </header>
+
+  <div id="cursor" aria-hidden="true"></div>
+  <div id="ending-light" aria-hidden="true" hidden></div>
+  <div id="debug" class="micro" hidden></div>
+
+  <noscript>
+    <div class="noscript">
+      <p>UNTIL THE LAST STAR is an interactive journey through the history and future
+      of the universe. It needs JavaScript to run.</p>
+    </div>
+  </noscript>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
