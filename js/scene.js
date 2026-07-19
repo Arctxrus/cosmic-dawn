@@ -34,7 +34,12 @@ export class SceneRig {
       { t: 0.29, pos: [8, 2, 88], look: [0, 0, -10] }, // a clump catches the eye
       { t: 0.345, pos: [0, 0, 72], look: [0, 0, -10] },// drawn in toward the ignition
       { t: 0.41, pos: [-10, 4, 96], look: [0, 0, -10] },// slow retreat from the burning star
-      { t: 0.6, pos: [0, -2, 90], look: [0, 0, -30] },
+      { t: 0.46, pos: [0, 20, 260], look: [0, 0, 0] },  // the vast pull-back: the web
+      { t: 0.53, pos: [10, 12, 150], look: [0, -6, -60] },// one filament catches the eye
+      { t: 0.575, pos: [6, 10, 30], look: [0, -6, -60] }, // approaching the galaxy disk
+      { t: 0.615, pos: [16, 12, -2], look: [26, 3, -35] }, // skimming the arm toward the Sun
+      { t: 0.65, pos: [34, 10, -13], look: [29, 2, -33] }, // arrival: sun seated left of frame
+      { t: 0.68, pos: [33, 9.5, -14.5], look: [29, 2, -33] },// NOW hold, barely breathing
       { t: 1.0, pos: [0, 0, 30], look: [0, 0, 0] },
     ];
     this.scrollVelocity = 0;

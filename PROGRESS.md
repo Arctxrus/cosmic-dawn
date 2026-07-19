@@ -6,7 +6,22 @@ read CONCEPT.md (approved, includes Act III chronology fix + all-input-mode endi
 `.claude/agents/verifier.md` — invoke after each stage, max 3 fix cycles, commit
 `stage N: <summary> [verified]` on PASS. Never delete anything under `verify/`.
 
-## Current stage: 4 (The Web + Home) — building
+## Current stage: 5 (The Fading + The Long Night + The Last Star) — building
+
+### Stage 4 — The Web + Home ✅ PASS (2 cycles)
+Built: 05-web.js (instanced galaxy impostors on filaments — same sine-filament family
+as dark ages for continuity; supernova cross-flares scroll-fired + 11s time-clock
+re-fires), 06-home.js (4-arm log-spiral galaxy 90k, Sun via shared makeStarRig,
+8 planet points + additive orbit hairlines, pale-blue-dot glow ring normal-blended,
+NOW hold). Camera: z=260 pull-back → galaxy approach → arm skim → ¾ arrival.
+Self-caught: sun originally filled the frame (radius 5.5→3.0, camera pulled back+up);
+orbit lines additive so they vanish over the bright disk.
+- Cycle 1 FAIL: mobile arrival captions over the sun core → #epoch-home bottom-anchored
+  on mobile (12vh padding). Also fixed from observations: desktop sun seated left of
+  center (camera look nudge), parked nova re-fires, NOW window widened to 0.5985.
+- Cycle 2 PASS: 0.00% bright pixels behind mobile captions, sun at 43.4% frame x,
+  8 parked flashes in 14s (11.0s refire period confirmed), NOW at raw 0.6000,
+  60fps T2 / 59 T1. Screenshots: verify/stage-4/.
 
 ### Stage 3 — Dark Ages + First Light ✅ PASS (2 cycles)
 Built: js/epochs/03-darkages.js (filament field, cursor gravity-well uniform),

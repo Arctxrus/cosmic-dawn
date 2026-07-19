@@ -139,7 +139,7 @@ export const EPOCHS = [
 // The moment within last-star at which the star dies (timeline t).
 export const EXTINCTION_T = 0.96;
 // HOME dwell window where the counter reads NOW.
-export const NOW_WINDOW = [0.60, 0.68];
+export const NOW_WINDOW = [0.5985, 0.68]; // slight early edge: the spring settles just under raw t
 
 // ---------------------------------------------------------------------------
 // Year readout mapping: piecewise anchors, interpolated in log space.

@@ -348,6 +348,11 @@ body.still-mode #cursor { display: none; }
       0 1px 3px rgba(8, 7, 15, 0.85);
   }
   .epoch-text .caption.on { opacity: 0.8; }
+  /* HOME: the sun owns the narrow frame's center — anchor the text low, over the arm */
+  #epoch-home {
+    justify-content: flex-end;
+    padding-bottom: 12vh;
+  }
   #title-lockup h1 { font-size: clamp(2.6rem, 13vw, 5rem); letter-spacing: 0.03em; }
   #subtitle { margin-top: 2rem; padding: 0 8vw; font-size: 8px; }
 }
