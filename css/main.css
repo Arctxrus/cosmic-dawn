@@ -102,9 +102,12 @@ body {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
   justify-content: center;
-  padding: 0 8vw;
+  /* left padding clears the epoch index; right stays tighter */
+  padding: 0 8vw 0 clamp(180px, 15vw, 260px);
   opacity: 0;
   visibility: hidden;
+  /* separation from bright scenes without a visible scrim */
+  text-shadow: 0 0 26px rgba(8, 7, 15, 0.65), 0 1px 4px rgba(8, 7, 15, 0.5);
 }
 .epoch-text.visible { visibility: visible; opacity: 1; }
 .epoch-text h2 {
@@ -334,6 +337,12 @@ body.still-mode #cursor { display: none; }
     overflow-wrap: break-word;
   }
   .epoch-text .caption { font-size: 12px; max-width: 100%; }
+  /* bright scenes fill the whole narrow viewport — captions need more separation */
+  .epoch-text {
+    text-shadow: 0 0 16px rgba(8, 7, 15, 0.95), 0 0 40px rgba(8, 7, 15, 0.75),
+      0 1px 3px rgba(8, 7, 15, 0.85);
+  }
+  .epoch-text .caption.on { opacity: 0.8; }
   #title-lockup h1 { font-size: clamp(2.6rem, 13vw, 5rem); letter-spacing: 0.03em; }
   #subtitle { margin-top: 2rem; padding: 0 8vw; font-size: 8px; }
 }

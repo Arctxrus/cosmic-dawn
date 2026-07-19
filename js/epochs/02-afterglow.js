@@ -50,7 +50,7 @@ export function createAfterglow() {
             ${GLSL_NOISE}
             void main() {
               vec2 p = vUv * (3.0 + uLayer) + vec2(uTime * 0.015 * (uLayer + 1.0), uLayer * 7.0);
-              float n = fbm(p + fbm(p * 0.5) * 0.7);
+              float n = fbm(p + vnoise(p * 0.6) * 0.9);
               // recombination: fog thins as progress rises
               float density = smoothstep(0.25, 0.85, n) * (1.0 - smoothstep(0.35, 0.95, uProgress));
               // pointer clears the fog locally — wiping the newborn universe

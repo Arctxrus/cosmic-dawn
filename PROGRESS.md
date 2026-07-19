@@ -6,7 +6,22 @@ read CONCEPT.md (approved, includes Act III chronology fix + all-input-mode endi
 `.claude/agents/verifier.md` — invoke after each stage, max 3 fix cycles, commit
 `stage N: <summary> [verified]` on PASS. Never delete anything under `verify/`.
 
-## Current stage: 2 (Prologue + Spark + Afterglow) — building
+## Current stage: 3 (Dark Ages + First Light) — building
+
+### Stage 2 — Prologue + Spark + Afterglow ✅ PASS (2 cycles)
+Built: js/epochs/{manager,util,01-spark,02-afterglow}.js wired into main loop; camera
+keyframes through t=0.21; scroll-velocity agitation; shared glow-sprite helper.
+- Cycle 1 self-caught before verifier (smoke test): camera was inside the blast (moved
+  keyframe z 70→95), fog fbm cheapened (4 octaves + vnoise warp), spark got core glow +
+  density falloff, desktop epoch-text left padding now clamp(180px,15vw,260px) to clear
+  the index, global text-shadow added.
+- Verifier cycle 1 FAIL: mobile captions illegible over the blast → heavier mobile-only
+  text-shadow + caption opacity 0.8. Cycle 2 PASS.
+- FPS 60 @ T2 on real GPU (RTX 3060 via --use-angle=d3d11; SwiftShader gives ~20-34 and
+  must NOT be used for FPS judgment). Boundary crossings verified as continuous.
+- Screenshots: verify/stage-2/.
+- Note for future stages: verifier must launch Chromium with
+  ["--use-angle=d3d11","--enable-gpu","--ignore-gpu-blocklist"].
 
 ## Stage log
 

@@ -72,13 +72,24 @@ async function boot() {
   }
 
   setProgress(0.25, 'WARMING THE ENGINES');
-  const [{ SceneRig }] = await Promise.all([import('./scene.js'), loadFonts()]);
+  const [{ SceneRig }, { EpochManager }, { createSpark }, { createAfterglow }] =
+    await Promise.all([
+      import('./scene.js'),
+      import('./epochs/manager.js'),
+      import('./epochs/01-spark.js'),
+      import('./epochs/02-afterglow.js'),
+      loadFonts(),
+    ]);
   setProgress(0.6, 'PLACING THE STARS');
 
   let tier = detectTier();
   const rig = new SceneRig(document.getElementById('scene'), tier);
+  const epochs = new EpochManager(rig);
+  epochs.register(createSpark());
+  epochs.register(createAfterglow());
+  epochs.update(timeline.rawT, 0.016, 0); // init near epochs behind the preloader
   rig.renderer.compile(rig.scene, rig.camera);
-  rig.update(0, 0.016, 0);
+  rig.update(timeline.rawT, 0.016, 0);
   rig.render(); // first frame behind the preloader — reveal is seamless
   setProgress(0.95);
   await dismissPreloader();
@@ -96,6 +107,8 @@ async function boot() {
     const time = now / 1000;
 
     timeline.update(dt);
+    rig.scrollVelocity = timeline.velocity;
+    epochs.update(timeline.t, dt, time);
     rig.update(timeline.t, dt, time);
     rig.render();
     ui.update(timeline.t);

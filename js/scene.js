@@ -23,12 +23,18 @@ export class SceneRig {
     this.pointerActive = false;
 
     // camera path: placeholder dolly for stage 1; epochs refine keyframes later
+    // refined per stage as epochs are built
     this._camKeyframes = [
-      { t: 0.0, pos: [0, 0, 120], look: [0, 0, 0] },
+      { t: 0.0, pos: [0, 0, 150], look: [0, 0, 0] },   // prologue: quiet dark
+      { t: 0.04, pos: [0, 0, 115], look: [0, 0, 0] },  // drawn toward the point
+      { t: 0.075, pos: [0, 2, 95], look: [0, 0, 0] },  // at the shell of the detonation
+      { t: 0.12, pos: [0, 6, 155], look: [0, 0, 0] },  // pushed back by the blast
+      { t: 0.21, pos: [0, 0, 85], look: [0, 0, -20] }, // drifting through thinning fog
       { t: 0.3, pos: [0, 4, 60], look: [0, 0, 0] },
       { t: 0.6, pos: [0, -2, 90], look: [0, 0, -30] },
       { t: 1.0, pos: [0, 0, 30], look: [0, 0, 0] },
     ];
+    this.scrollVelocity = 0;
 
     this._buildSkybox(tier);
     this.applyTier(tier);

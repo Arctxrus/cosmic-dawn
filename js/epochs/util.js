@@ -17,7 +17,7 @@ export const GLSL_NOISE = /* glsl */ `
   }
   float fbm(vec2 p) {
     float v = 0.0, a = 0.5;
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 4; i++) {
       v += a * vnoise(p);
       p = p * 2.03 + vec2(17.1, 9.3);
       a *= 0.55;
@@ -44,6 +44,40 @@ export function envelope(l, inEdge = 0.15, outEdge = 0.15) {
   const b = Math.min(1, (1 - l) / outEdge);
   const s = (x) => x * x * (3 - 2 * x);
   return s(Math.max(0, Math.min(a, b)));
+}
+
+import * as THREE from 'three';
+
+let _glowTex = null;
+/** Shared radial-glow sprite texture (drawn once to an offscreen canvas). */
+export function glowTexture() {
+  if (_glowTex) return _glowTex;
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+  g.addColorStop(0, 'rgba(255,255,255,1)');
+  g.addColorStop(0.25, 'rgba(255,255,255,0.55)');
+  g.addColorStop(0.6, 'rgba(255,255,255,0.12)');
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 128, 128);
+  _glowTex = new THREE.CanvasTexture(c);
+  return _glowTex;
+}
+
+/** Additive glow sprite for hot cores. */
+export function makeCoreGlow(color, size) {
+  const mat = new THREE.SpriteMaterial({
+    map: glowTexture(),
+    color,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const s = new THREE.Sprite(mat);
+  s.scale.setScalar(size);
+  return s;
 }
 
 export function randDir() {
