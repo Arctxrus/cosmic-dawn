@@ -6,7 +6,42 @@ read CONCEPT.md (approved, includes Act III chronology fix + all-input-mode endi
 `.claude/agents/verifier.md` — invoke after each stage, max 3 fix cycles, commit
 `stage N: <summary> [verified]` on PASS. Never delete anything under `verify/`.
 
-## Status: COMPLETE — all 8 stages built, verified, committed (2026-07-19)
+## Status: COMPLETE + FINAL REVISION PASS — all 8 stages + 6 revision items verified (2026-07-19)
+
+### Final revision pass ✅ (2 verifier cycles for groups A+B, 1 for item 5 + full regression)
+Screenshots: verify/final-pass/. Items:
+1. **Text protection (sitewide, mobile-first)**: portrait camera pitch (-0.12 rad,
+   heroes ride high), all mobile epoch text bottom-anchored (15vh) over the darker
+   lower third, soft radial scrim (~34% peak, feathered — activates with the text),
+   heavier shadows; mobile padding-left clamp(130px,35vw,152px) clears the widest
+   active index label; FADING giant scaled 0.72x on portrait. Luma table: worst
+   headline background 14.6% >180 (was 26.9%), all epochs every-word-readable.
+2. **Real gravitational lensing at T2** (js/lensing.js): screen-space pass —
+   Einstein-ring distortion, absolute shadow, doppler photon ring, cursor
+   frame-dragging. T1/T0 keep the fake meshes; governor drops the lens FIRST
+   (<55fps while active; verified chain under 20x throttle: T2+L → T2 → T1 → T0).
+   60fps at T2+L on the RTX 3060. Debug tier reads "T2+L".
+3. **Crisper particles**: 256px tight-core glow texture, crisp-core falloff terms in
+   all 10 point shaders, hero counts at T2 raised (first light 160k, home galaxy
+   120k, ember 45k). Measured +85-90% high-frequency energy vs baselines, 60fps.
+4. **Rekindle memory**: persistent screen-space scorch map (128x64 canvas texture) —
+   in THE FADING, recently-died skybox stars REVIVE near the cursor (bright gold,
+   size-boosted) and carry a full extinction penalty after the cursor leaves;
+   memory clears scrolling back below t=0.66. Cycle-1 version was invisible
+   (multiplied near-zero alpha); redesigned to additive revival. Verified
+   B>>A>C≈D star-pixel counts. Still "understated at a glance" per verifier —
+   acceptable; noted below.
+5. **THE WEB two-level LOD** (kept — no revert needed): 6 corridor-nearest impostors
+   morph into 5.5k-point particle spirals over a camera-distance window (85→45 wu);
+   spirals persist into the dive (t≤0.585). Verified: monotonic hand-over (no pops,
+   no double-exposure), 60fps, "reads as parallax through resolved bodies, not a
+   crossfade" (verifier).
+6. **Credits**: MADE BY ZAYN → github.com/Arctxrus, CODE → github.com/Arctxrus/cosmic-dawn,
+   PORTFOLIO → placeholder constant PORTFOLIO_URL at top of js/content.js (null → span).
+
+Full final regression: PASS (journeys both viewports, ?still, reduced-motion,
+keyboard incl. End→10¹⁰⁰ and focus rings, tier chain, credits DOM, zero console
+errors everywhere, 60fps at all 11 probe points).
 
 Run locally: `python -m http.server 8080` in the project root → http://localhost:8080
 (never port 8123 on this machine — occupied by an unrelated site).

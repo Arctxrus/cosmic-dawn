@@ -59,8 +59,16 @@ function filamentPositions(n, spread) {
   return pos;
 }
 
+// two-level LOD: how many near-corridor impostors resolve into particle spirals
+const RESOLVE = { 2: 6, 1: 4, 0: 3 };
+const SPIRAL_PTS = 5500;
+// the dive corridor the camera follows toward HOME's galaxy
+const CORRIDOR = new THREE.Vector3(6, 9, 80);
+const RESOLVE_FAR = 85, RESOLVE_NEAR = 45; // camera-distance morph window
+
 export function createWeb() {
   let mesh = null, novae = null, uniforms = null, novaUniforms = null;
+  let spirals = null, spiralUniforms = null;
 
   return {
     id: 'web',
@@ -69,6 +77,16 @@ export function createWeb() {
     init(rig) {
       const n = COUNT[rig.tier];
       const pos = filamentPositions(n, [560, 320, 420]);
+
+      // choose the impostors nearest the dive corridor: they will resolve
+      const byDist = Array.from({ length: n }, (_, i) => i).sort((a, b) => {
+        const da = (pos[a * 3] - CORRIDOR.x) ** 2 + (pos[a * 3 + 1] - CORRIDOR.y) ** 2 + (pos[a * 3 + 2] - CORRIDOR.z) ** 2;
+        const db = (pos[b * 3] - CORRIDOR.x) ** 2 + (pos[b * 3 + 1] - CORRIDOR.y) ** 2 + (pos[b * 3 + 2] - CORRIDOR.z) ** 2;
+        return da - db;
+      });
+      const chosen = byDist.slice(0, RESOLVE[rig.tier]);
+      const resolve = new Float32Array(n);
+      for (const i of chosen) resolve[i] = 1;
 
       const geo = new THREE.InstancedBufferGeometry();
       const quad = new THREE.PlaneGeometry(1, 1);
@@ -79,6 +97,7 @@ export function createWeb() {
       const seed = new Float32Array(n);
       for (let i = 0; i < n; i++) seed[i] = Math.random();
       geo.setAttribute('aSeed', new THREE.InstancedBufferAttribute(seed, 1));
+      geo.setAttribute('aResolve', new THREE.InstancedBufferAttribute(resolve, 1));
       geo.instanceCount = n;
 
       uniforms = {
@@ -97,16 +116,19 @@ export function createWeb() {
         blending: THREE.AdditiveBlending,
         vertexShader: /* glsl */ `
           attribute vec3 aOffset;
-          attribute float aSeed;
+          attribute float aSeed, aResolve;
           uniform float uTime, uEnv, uProgress, uPointerStrength;
           uniform vec3 uPointer;
           varying vec2 vUv;
-          varying float vSeed, vNear;
+          varying float vSeed, vNear, vFade;
           ${GLSL_NOISE}
           void main() {
             vUv = uv;
             vSeed = aSeed;
             vec3 p = aOffset;
+            // near-corridor impostors hand over to their resolved spirals
+            float cd = distance(cameraPosition, p);
+            vFade = 1.0 - aResolve * smoothstep(${RESOLVE_FAR}.0, ${RESOLVE_NEAR}.0, cd);
             // structure keeps condensing across the epoch
             p *= 1.0 - uProgress * 0.06;
             // pointer shear: the web slides gently around the cursor ray
@@ -127,7 +149,7 @@ export function createWeb() {
           uniform sampler2D uMap;
           uniform float uEnv, uTime;
           varying vec2 vUv;
-          varying float vSeed, vNear;
+          varying float vSeed, vNear, vFade;
           void main() {
             vec4 tex = texture2D(uMap, vUv);
             // temperature scatter: some warm ellipticals, some blue spirals
@@ -137,6 +159,7 @@ export function createWeb() {
             float tw = 0.8 + 0.2 * sin(uTime * (0.3 + vSeed) + vSeed * 50.0);
             float a = tex.a * uEnv * (0.5 + fract(vSeed * 3.1) * 0.5) * tw;
             a *= 1.0 + vNear * 1.6; // acknowledged by your presence
+            a *= vFade;             // resolved galaxies retire their impostor
             gl_FragColor = vec4(col * tex.rgb, a);
           }
         `,
@@ -200,16 +223,115 @@ export function createWeb() {
       novae = new THREE.Points(ngeo, nmat);
       novae.frustumCulled = false;
       rig.scene.add(novae);
+
+      // --- the resolve layer: near-corridor galaxies as real particle spirals ---
+      const K = chosen.length;
+      const total = K * SPIRAL_PTS;
+      const spos = new Float32Array(total * 3);
+      const scen = new Float32Array(total * 3);
+      const ssed = new Float32Array(total);
+      const ARMS = 3;
+      for (let g = 0; g < K; g++) {
+        const gi = chosen[g];
+        const cx = pos[gi * 3], cy = pos[gi * 3 + 1], cz = pos[gi * 3 + 2];
+        const R = 5 + (g % 3) * 1.8;
+        // random-ish fixed tilt per galaxy
+        const tx = ((g * 0.37) % 1) * 1.1 - 0.4;
+        const tz = ((g * 0.73) % 1) * 1.2 - 0.6;
+        const cosx = Math.cos(tx), sinx = Math.sin(tx);
+        const cosz = Math.cos(tz), sinz = Math.sin(tz);
+        for (let i = 0; i < SPIRAL_PTS; i++) {
+          const k = g * SPIRAL_PTS + i;
+          const arm = i % ARMS;
+          const rr = Math.pow(Math.random(), 0.6);
+          const th = (arm / ARMS) * Math.PI * 2 + Math.log(1 + rr * 5) * 2.4 + (Math.random() - 0.5) * (0.6 - rr * 0.3);
+          let lx = Math.cos(th) * rr * R;
+          let ly = (Math.random() - 0.5) * (1 - rr * 0.8) * R * 0.14;
+          let lz = Math.sin(th) * rr * R;
+          // tilt: rotate about x then z
+          let y1 = ly * cosx - lz * sinx, z1 = ly * sinx + lz * cosx;
+          let x2 = lx * cosz - y1 * sinz, y2 = lx * sinz + y1 * cosz;
+          spos[k * 3] = cx + x2;
+          spos[k * 3 + 1] = cy + y2;
+          spos[k * 3 + 2] = cz + z1;
+          scen[k * 3] = cx; scen[k * 3 + 1] = cy; scen[k * 3 + 2] = cz;
+          ssed[k] = Math.random();
+        }
+      }
+      const sgeo = new THREE.BufferGeometry();
+      sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+      sgeo.setAttribute('aCenter', new THREE.BufferAttribute(scen, 3));
+      sgeo.setAttribute('aSeed', new THREE.BufferAttribute(ssed, 1));
+      spiralUniforms = {
+        uEnv: { value: 0 },
+        uTime: { value: 0 },
+        uPixelRatio: { value: rig.renderer.getPixelRatio() },
+      };
+      const smat = new THREE.ShaderMaterial({
+        uniforms: spiralUniforms,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        vertexShader: /* glsl */ `
+          attribute vec3 aCenter;
+          attribute float aSeed;
+          uniform float uTime, uEnv, uPixelRatio;
+          varying float vSeed, vCore, vRes;
+          void main() {
+            vSeed = aSeed;
+            vec3 rel = position - aCenter;
+            vCore = 1.0 - smoothstep(0.0, 7.0, length(rel));
+            // slow rotation about the galaxy's local vertical
+            float a = uTime * 0.06;
+            float ca = cos(a), sa = sin(a);
+            vec3 rot = vec3(rel.x * ca - rel.z * sa, rel.y, rel.x * sa + rel.z * ca);
+            vec3 p = aCenter + rot;
+            // the spiral only exists while the camera is close (the impostor's inverse)
+            float cd = distance(cameraPosition, aCenter);
+            vRes = smoothstep(${RESOLVE_FAR}.0, ${RESOLVE_NEAR}.0, cd);
+            vec4 mv = modelViewMatrix * vec4(p, 1.0);
+            float size = (0.6 + fract(aSeed * 6.7) * 1.2) * (0.8 + vCore * 1.2) * uPixelRatio;
+            gl_PointSize = size * (240.0 / -mv.z) * uEnv * vRes;
+            gl_Position = projectionMatrix * mv;
+          }
+        `,
+        fragmentShader: /* glsl */ `
+          uniform float uEnv;
+          varying float vSeed, vCore, vRes;
+          void main() {
+            vec2 c = gl_PointCoord - 0.5;
+            float d = length(c);
+            if (d > 0.5) discard;
+            float glow = pow(1.0 - d * 2.0, 3.0) + smoothstep(0.2, 0.06, d) * 0.5;
+            vec3 core = vec3(1.0, 0.88, 0.68);
+            vec3 arms = vec3(0.72, 0.82, 1.0);
+            vec3 col = mix(arms, core, vCore + fract(vSeed * 4.7) * 0.25);
+            gl_FragColor = vec4(col, glow * uEnv * vRes * (0.25 + vCore * 0.5));
+          }
+        `,
+      });
+      spirals = new THREE.Points(sgeo, smat);
+      spirals.frustumCulled = false;
+      rig.scene.add(spirals);
     },
 
     setVisible(v) {
       if (mesh) mesh.visible = v;
       if (novae) novae.visible = v;
+      if (spirals) spirals.visible = v;
     },
 
     update(t, dt, time, rig) {
       const l = localT(t, RANGE);
       const env = envelope(l, 0.12, 0.14);
+      // the spirals persist into the dive (HOME's approach) so the hand-over
+      // reads as falling into structure, not a crossfade
+      const spiralEnv = envelope(
+        Math.min(1, Math.max(0, (t - 0.44) / (0.585 - 0.44))), 0.25, 0.1
+      );
+      spiralUniforms.uEnv.value = spiralEnv;
+      spiralUniforms.uTime.value = time;
+      spiralUniforms.uPixelRatio.value = rig.renderer.getPixelRatio();
       uniforms.uEnv.value = env;
       uniforms.uTime.value = time;
       uniforms.uProgress.value = l;
@@ -231,6 +353,10 @@ export function createWeb() {
       novae.geometry.dispose();
       novae.material.dispose();
       novae = null;
+      rig.scene.remove(spirals);
+      spirals.geometry.dispose();
+      spirals.material.dispose();
+      spirals = null;
     },
   };
 }
