@@ -174,6 +174,8 @@ body {
   position: relative;
   line-height: 1;
   padding: 2px 0;
+  /* stays legible when a bright scene sweeps behind the index */
+  text-shadow: 0 0 12px rgba(8, 7, 15, 0.9), 0 1px 3px rgba(8, 7, 15, 0.7);
 }
 #epoch-index button:hover { opacity: var(--op-secondary); }
 #epoch-index button[aria-current='true'] { opacity: var(--op-active); }
@@ -227,12 +229,18 @@ body {
   100% { transform: scaleY(1) translateY(8px); opacity: 0; }
 }
 
-/* focus */
-:focus-visible { outline: 1px solid var(--ember); outline-offset: 4px; }
+/* focus — id-level selectors so all:unset resets can't swallow the ring */
+:focus-visible,
+#epoch-index button:focus-visible,
+#sound-toggle:focus-visible {
+  outline: 1px solid var(--ember);
+  outline-offset: 4px;
+}
 
 /* ---- custom cursor ---- */
 #cursor {
   position: fixed; z-index: 10;
+  mix-blend-mode: screen; /* the light passes over UI text without hiding it */
   width: 10px; height: 10px; border-radius: 50%;
   background: var(--ember);
   box-shadow: 0 0 14px 2px rgba(228, 184, 92, 0.45);

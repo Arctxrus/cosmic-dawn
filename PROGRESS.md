@@ -6,7 +6,29 @@ read CONCEPT.md (approved, includes Act III chronology fix + all-input-mode endi
 `.claude/agents/verifier.md` — invoke after each stage, max 3 fix cycles, commit
 `stage N: <summary> [verified]` on PASS. Never delete anything under `verify/`.
 
-## Current stage: 8 (final polish + deliverables) — building
+## Status: COMPLETE — all 8 stages built, verified, committed (2026-07-19)
+
+Run locally: `python -m http.server 8080` in the project root → http://localhost:8080
+(never port 8123 on this machine — occupied by an unrelated site).
+Flags: `?debug` (FPS/tier/t overlay) · `?tier=0|1|2` (force tier) · `?still` (force Still Mode).
+
+### Stage 8 — final polish + deliverables ✅ PASS (2 cycles)
+Built: epoch-index text-shadow (legible over the accretion disk in the flagged pose —
+verified fixed), cursor mix-blend-mode:screen (never hides UI text), inline-SVG ember
+favicon, og:type/twitter meta, README.md.
+- Cycle 1 FAIL: no visible focus ring on index buttons (all:unset beat the global
+  :focus-visible rule — third strike for that cascade) → id-level focus selectors.
+- Cycle 2 PASS. Full final sweep: cold load clean, 20-step journey zero errors,
+  all 9 index landings exact (one-third into each epoch), FPS 60 at T2 at six
+  positions, governor T2→T1 in ~9s under 10x throttle, mobile 8-step journey clean
+  with strong tap pulse (RMS 79 vs 12 control), ?still all epochs + ending ember,
+  reduced-motion auto-still, a11y checks (lang, h2s, buttons, aria, focus rings).
+- Known cosmetic margin: "FIRST LIGHT" index label over the white-hot disk band at
+  t≈0.845 in an extreme pointer pose is the lowest-contrast frame — readable, noted.
+- Not machine-verifiable: audible audio output (headless CI has no speakers) — the
+  procedural score needs one human listen-through; graph lifecycle/automation values
+  were verified programmatically.
+- Screenshots: verify/stage-8/.
 
 ### Stage 7 — audio + governor bail-out + mobile polish ✅ PASS (2 cycles)
 Built: js/audio.js — fully procedural WebAudio (descending drone, temperature-tracked
