@@ -241,3 +241,28 @@ ending light), js/still-mode.js (reduced-motion / no-WebGL / ?still), js/main.js
   keyframes are placeholders to be replaced by per-epoch choreography.
 - Audio (stage 7): sound toggle is present but a no-op until then.
 - Per-epoch pointer signatures (stage 6).
+
+## 2026-08-07 · Domain migration to Cloudflare Pages
+- New URL: https://star.pagefront.co.uk (served at domain root, no project subpath).
+- Hosting moved to Cloudflare Pages, auto-deploy on push to main.
+- Added `canonical` and `og:url` to the head (the site had other og tags but neither of
+  these); both point to the new subdomain, added in the existing head style.
+- No `github.io` references, `<base>` tags or absolute `/cosmic-dawn/` asset paths
+  existed, so no path fixes were needed; all references were already relative or CDN.
+- No CNAME file present.
+- No `?v=` cache-busting scheme exists in this repo (module imports + importmap, plain
+  `css/main.css`); Cloudflare Pages handles caching, so no scheme to bump.
+- `PORTFOLIO_URL` in js/content.js set from `null` to `https://pagefront.co.uk`; the
+  PORTFOLIO credit link now resolves to it (rel="noopener", no target="_blank", matching
+  the file's existing link convention in js/ui.js `_buildCredits`).
+- Owner name removed from the credits: `MADE BY ZAYN` (href github.com/Arctxrus) became
+  `MADE BY PAGEFRONT` (href PORTFOLIO_URL) so the owner's name no longer appears on the
+  shipped site. Judgement call: relabelled to the Pagefront brand and repointed to the
+  portfolio rather than dropping the entry. See report; orchestrator may prefer a
+  different label.
+- Flagged for orchestrator: the CODE credit still links to
+  `github.com/Arctxrus/cosmic-dawn` (the real repo). The handle "Arctxrus" is a username,
+  not the owner's given name, and the link is functional, so it was left as-is. If the
+  repo moves to a Pagefront org or the handle must be hidden, update this link then.
+- CODE credit removed entirely (orchestrator ruling): the repos are now private, so github.com/Arctxrus/cosmic-dawn was a dead link for visitors and carried the personal handle. Credits are now MADE BY PAGEFRONT and PORTFOLIO, both to pagefront.co.uk. No arctxrus/github reference remains in any shipped file.
+- Added a `_redirects` file at the repo root forcing 404 on the non-site paths that Cloudflare Pages would otherwise serve by path: /CONCEPT.md, /PROGRESS.md, /README.md, /references/*, /verify/*. Site paths (index.html, css/, js/) stay reachable. Note: _redirects is a Cloudflare Pages runtime feature, so its 404 forcing cannot be exercised under `python -m http.server`; the file was validated as plain text, one rule per line, no source-path collisions.
